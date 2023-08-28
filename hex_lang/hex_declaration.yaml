@@ -1,0 +1,68 @@
+hex: # lake-root-level key intended to declare relations only (relations could be declared
+     # in ttl-section too). 
+
+#___________________________________________________________________________________________
+#_____________________________________ elementary __________________________________________
+
+  # Sometimes it's more convenient to declare relations in one separated (from ttl objects
+  # declarations) place.
+
+  - obj10:   # source object (declared in ttl)
+      obj11: # target object (declared in ttl)
+
+  - obj12:          
+      obj13: type   # target object (declared in ttl) and relation type
+
+  - obj14:              # target object (declared in ttl)
+      obj15: (<).type   # source object (declared in ttl) and relation type
+
+  # These relations declarations are good to coexist with 'in-ttl' ones and matching rules
+  # are the same:
+
+  # Two  matched declarations treated as one.
+  # Two or more relations matched by source, target and direction but label 
+  # are getting warning.
+
+  
+
+  # Future releases:      # Relations could be declared in a 'fully unwind' or 'edges' manner.
+                          # Next declaration is the same as previous one
+
+                          # ---
+                          # edges:
+                          #   - source: obj15
+                          #     target: obj14
+                          #     label: type
+
+
+#___________________________________________________________________________________________
+#_____________________________________ intermediate ________________________________________
+
+  - obj15:      # Quick chain-like declaring 
+      obj16:
+        obj17:
+          # ... 
+
+  - obj18:
+      obj19: #type # try to uncomment most left and see yaml error
+        obj20: 
+          hexParams:
+            label: type
+            direction: "reverse"
+          obj21:
+
+  # Solution is using 'unwind' notation
+
+  - obj18:
+      obj19:
+        hex:
+          obj20: type
+
+
+
+#___________________________________________________________________________________________
+#_______________________________________ advanced __________________________________________
+
+  - obj15:      # It's ok. This and previous declarations will not be merged 
+      obj18:    # but intermix
+        obj20:

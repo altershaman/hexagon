@@ -1,0 +1,36 @@
+#___________________________________________________________________________________________
+#_______________________________________ advanced __________________________________________
+     
+  # It may happen that ttl object is declared more than one time across currently connected
+  # manifests (or even across one manifest as shown below)
+
+
+ttl:
+
+  obj7:
+    title: title
+    description: foo
+    hex:
+      obj6:
+
+  # obj7:
+  #   title: title
+  #   description: bar
+  #   color: royalblue
+  #   hex:
+  #     obj6: (<)
+
+  # # These two objects will be treated as one. Attributes (including hex attribute)
+  # # will be merged (as shown below)
+
+  # obj7:                 # id - matched (ok)
+  #   title: title        # title - matched (ok)
+  #   description: bar    # description - matched (value of 'last' occurence replaces
+  #                       #                        the value of 'earlier' occurence)
+  #   color: royalblue    # color - unmatched (just occured as matched)
+  #   hex:                # matched -
+  #     obj6: (<).        #   value of 'last' occurence replaces the value of 'earlier' one
+
+# This behaviuor is not Hexagon feature but thing is inherited fron DH core.
+# Try to leverage it carefully to your favor
+

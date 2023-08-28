@@ -1,0 +1,455 @@
+# This is complete Hexagon language reference
+# ver 1.0.0
+# DO NOT IMPORT THIS MANIFEST INTO LAKE
+
+# Hexagon language syntax is "yaml as json" and semantic is Hexagon specific as
+# described below
+
+# Hexagon  will try to interpret all data in DH manifests as nodes, edges, functions etc.
+# according to several reserved lake-root-level keys.
+
+# The rest of this manifest is divided into big sections sheding light to
+# lake-root-level keys. Each section is subdivided into smaller parts from 
+# elementary to advanced  complexity extent. It's matter of your background how to
+# learn further by sections or by complexity
+
+
+
+
+
+
+
+
+
+ttl: # lake-root-level key (true typeless) intended to declare objects and relations
+
+#___________________________________________________________________________________________
+#_____________________________________ elementary __________________________________________
+
+  obj1: # id or ttl key 'obj1' assigned to object
+    attribute1_key: attribute1_value # some object's (obj1) attribute key:value pair
+    attribute2_key: attribute2_value # another object's attribute key:value pair
+
+  obj2: # id or ttl key 'obj2' assigned to object
+    attribute1_key: attribute1_value # some object's (obj2) attribute key: value pair
+
+                    # Attributes values could be any yaml valid mapping, sequence or scalar. 
+                    # Any of this have no semantic meaning for Hexagon, except
+                    # hex-attribute (see hex section). But attributes can play role when
+                    # data is being validated by domain specific rules or be valuable for
+                    # presentation rendering purposes
+
+  # It doesn't matter the order or manifest where object is declared - all ttl objects
+  # are in lake at the same time
+
+  obj3: 
+    hex: # hex-attribute key of obj3 intended to in-ttl declare relation(s) of obj3
+         # Hexagon treats all relations directional, i.e. having one 'source object' (obj3)
+         # and one 'target object'
+      obj1: # one of declared ttl objects now gets additional declaration as target
+            # in relation with obj3 (source)
+      obj2: # another one of declared ttl objects declared additionally as target
+            # in relation with obj3 (source)
+
+
+#___________________________________________________________________________________________
+#_____________________________________ intermediate ________________________________________
+
+  # You may want to make difference between relations, i.e. assign kinda type to them
+
+  obj4:
+    hex:
+      obj3: type1  # obj4 has outbound type1 relation to obj3
+                   # or opposite reading - obj3 has inbound type1 relation from obj4
+      obj2: type2  # the same but type 2 to obj2
+      obj1: type1  # type 1 again but to obj1
+
+  # Normally you declare relations FROM declaring object key through hex attribute TO other
+  # objects keys. But sometimes you're more comfortable with 'reverse' relation declaration
+
+  obj5:
+    hex:
+      obj6: (<).type1       # obj5 has inbound type1 relation from obj6
+                            # or opposite reading - obj6 has outbound type1 relation to obj5
+
+                            # It's the same as next below
+  obj6:
+    title: Object 6
+    hex:
+      obj5: type1
+
+  # These two last in-ttl relation declarations are good to coexist and will be treated by Hexagon
+  # as one relation
+  # If happend that one of two declarations type label is changed Hexagon will treat them as
+  # two different codirected relations between same two objects and will throgh warning
+
+  
+  # Future releases:      # Objects could be declared in a 'fully unwind' or 'nodes' manner.
+                          # Next declaration is the same as previous one
+  
+                          # ---
+                          # nodes:
+                          #   - id: obj6
+                          #     body:
+                          #       title: Object 6
+                          #       hex:
+                          #         obj5: type1
+
+
+#___________________________________________________________________________________________
+#_______________________________________ advanced __________________________________________
+     
+  # It may happen that ttl object is declared more than one time across currently connected
+  # manifests (or even across one manifest as shown below)
+
+---
+ttl:
+
+  obj7:
+    title: title
+    description: foo
+    hex:
+      obj6:
+---
+ttl:
+
+  obj7:
+    title: title
+    description: bar
+    color: royalblue
+    hex:
+      obj6: (<).        # future releases: with no mandatory dot
+
+  # These two objects will be treated as one. Attributes (including hex attribute)
+  # will be merged (as shown below)
+---
+ttl:
+
+  obj7:                 # id - matched (ok)
+    title: title        # title - matched (ok)
+    description: bar    # description - matched (value of 'last' occurence replaces
+                        #                        the value of 'earlier' occurence)
+    color: royalblue    # color - unmatched (just occured as matched)
+    hex:                # matched -
+      obj6: (<).        #   value of 'last' occurence replaces the value of 'earlier' one
+
+# This behaviour is not Hexagon feature but thing is inherited fron DH core.
+# Try to leverage it carefully to your favor
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+hex: # lake-root-level key intended to declare relations only (relations could be declared
+     # in ttl-section too). 
+
+#___________________________________________________________________________________________
+#_____________________________________ elementary __________________________________________
+
+  # Sometimes it's more convenient to declare relations in one separated (from ttl objects
+  # declarations) place.
+
+  - obj10:   # source object (declared in ttl)
+      obj11: # target object (declared in ttl)
+
+  - obj12:          
+      obj13: type   # target object (declared in ttl) and relation type
+
+  - obj14:              # target object (declared in ttl)
+      obj15: (<).type   # source object (declared in ttl) and relation type
+
+  # These relations declarations are good to coexist with 'in-ttl' ones and matching rules
+  # are the same:
+
+  # Two  matched declarations treated as one.
+  # Two or more relations matched by source, target and direction but label 
+  # are getting warning.
+
+  
+
+  # Future releases:      # Relations could be declared in a 'fully unwind' or 'edges' manner.
+                          # Next declaration is the same as previous one
+
+                          # ---
+                          # edges:
+                          #   - source: obj15
+                          #     target: obj14
+                          #     label: type
+
+
+#___________________________________________________________________________________________
+#_____________________________________ intermediate ________________________________________
+
+---
+hex:
+  - obj15:      # Quick chain-like declaring 
+      obj16:
+        obj17:
+          # ... 
+
+  - obj18:
+      obj19: #type # try to uncomment most left and see yaml error
+        obj20: type
+
+  # Solution is using 'unwind' notation
+
+  - obj18:
+      obj19:
+        hex.label: type #
+        hex:
+          obj20: type
+
+
+
+#___________________________________________________________________________________________
+#_______________________________________ advanced __________________________________________
+
+  - obj15:      # It's ok. This and previous declarations will not be merged 
+      obj18:    # but intermix
+        obj20:
+
+
+
+
+
+
+
+
+
+hexQ: # lake-root-level key intended to declare queries to objects and relations
+
+#___________________________________________________________________________________________
+#_____________________________________ elementary __________________________________________
+
+  query1:
+    title: Query 1
+    description: All objects having (any type) relations directed to obj3
+    hex:
+      aaa:          # aaa is the variable name
+        ttl.obj3:   # ttl 'namespace' denotes that obj3 is not variable name but object id
+
+  query2:
+    title: Query 2
+    description: All objects having (any type) relations directed to obj3 AND obj5
+    hex:
+      aaa:            
+        ttl.obj3: # If a has object structure then Hexagon treats keys of a as
+        ttl.obj5: # 'aaa having relations AND (to obj3, to obj5)'
+
+  query3:
+    title: Query 3
+    description: All objects having (any type) relations directed to obj3 OR obj5
+    hex:
+      aaa:            
+        - ttl.obj3: # If a has array structure then Hexagon treats keys of a as
+        - ttl.obj5: # 'aaa having relations OR (to obj3, to obj5)'
+  
+  query4:
+    title: Query 4
+    description: > 
+      All objects having (any type) relation directed to obj3
+                         AND
+                         (typed) relation to obj5
+    hex:
+      aaa:            
+        ttl.obj3: 
+        ttl.obj5: type
+
+  query5:
+    title: Query 5
+    description: > 
+      All objects having (typed) relation directed FROM obj3
+                         OR
+                         (typed) relation to obj5
+    hex:
+      aaa:            
+        - ttl.obj3: (<).type
+        - ttl.obj5: type
+
+  query6:
+    title: Query 6
+    description: > 
+      All objects NOT having (any type) relation directed TO obj3
+                  AND
+                  having (typed) relation to obj5
+    hex:
+      aaa:            
+        ttl.obj3: (!)
+        ttl.obj5: type
+
+  query7:
+    title: Query 7
+    description: > 
+      All objects NOT having (typed) relation directed FROM obj3
+                  OR
+                  having (typed) relation to obj5
+    hex:
+      aaa:            
+        - ttl.obj3: (!).(<).type
+        - ttl.obj5: type
+
+  query8:
+    title: Query 8
+    description: > 
+      All objects NOT having (typed) relation directed FROM obj3
+                  AND
+                  NOT having (typed) relation to obj5
+    hex:
+      aaa:            
+        ttl.obj3: (!).(<).type
+        ttl.obj5: (!).type
+
+  query9:
+    title: Query 9
+    description: > 
+      All objects NOT having (typed) relation directed FROM obj3
+                  OR
+                  NOT having (typed) relation to obj5
+    hex:
+      aaa:                        # Query results in joined sets of 
+        - ttl.obj3: (!).(<).type  # objects having both relations and
+        - ttl.obj5: (!).type      # objects having one out of two relations
+
+  query10:
+    title: Query 10
+    description: All objects having OR NOT (any type) relation directed TO obj5
+    hex:
+      aaa:                 # Query results in ALL objects except obj5 
+        - ttl.obj5: (!)    # Don't use queries of that kind to avoid useless memory allocation
+
+  query11:      
+    title: Query 11
+    description: obj5 if it has (any type) relation TO obj6
+    hex:
+      ttl.obj5:   # returns empty array (or null)
+        ttl.obj6: # if no relations FROM obj5 TO obj6
+
+#___________________________________________________________________________________________
+#_____________________________________ intermediate ________________________________________
+
+
+  query20:
+    hex:
+      aaa:
+        bbb:
+          ccc:
+            ttl.obj5:
+
+  query21:
+    hex:
+      aaa:
+        bba:
+          - ttl.obj6:
+          - ttl.obj7:
+        bbb:
+          ccc:
+            - ttl.obj8:
+            - ttl.obj5:
+
+
+
+# ttl or another schema to be translated into ttl_objects
+  
+  ###### Creating objects
+
+
+      # node1:
+      #   hex:
+      #     (500:<to1)node2:  Это все имеет смысл только для flow relations (vs dimensions (consists of dependencies and whatever? else))
+      #     (>)node2:
+      #     (<to1.to2)node2:
+
+
+      # this case is required rank of relation and sequence (if required) inside rang
+      # rank could be marked as . .. ... etc. Sequence is relative for example number
+      # if no rank - highest rank
+      # if conflict rank - take higher
+      # if no seq - lowest seq
+      # if conflict(unambiguose in set) seq - take lower
+
+    # this considered as sea_terminal.l1(viewpoint pattern): nodes included and all relations between them
+    # normally all relations are relevant to viewpoint, but if there is complex relationship, some relations
+    # may happen irrelevant to particular viewpoint and therefor we need to exlude'em from view.
+    # and can include derivatives triggers.
+    # sea_terminal.l2 (viewpoint landscape) is build based on pattern and include derivatives results if they triggered in pattern
+---
+
+
+  ###### Creating regular relations
+
+  
+  ### relations description
+
+
+  ### selectors injection - user selected predefined parameters
+
+  # obj:
+  #   hex:
+  #    ... maps ...
+  #    id: modes  подключаемый набор селекторов через /hexV/view?id=l0_id.modes_id.active_modes
+  #    id: modes  если view вызывается без модов, то он и отображается без модов.
+
+
+  ### focusing - ?????????????
+  ### condition injection - fine tuning of vp landscape
+  ### functions injection - run-time relations and objects creation 
+
+
+  ###### Quering Hexagon
+
+  ### Triggers
+
+  # 1.  Presentation source to build view (Query is the pattern)
+  #       Presentation when is avaluated see triggers in pattern and starts relevant additional $eval
+  #       event:
+  #         hex:
+  #           capability: @rule -- some trigger on relation
+
+
+  #       blabla: @rule -- some trigger on object
+
+  # 2.  Some event occured 'on' objects (objects complined with conditions) (ex. on events  or events when appeared with caps simultaniously)
+  #     may trigger
+  #       * hexQ or
+  #       * $eval (much simplier, because complex validation could be  included in $eval but hexQ remains a trigger simple condition)
+
+
+  ### Simplest Queries
+
+
+
+  ### Relations conditions
+
+
+
+  ### Combining relations conditions
+
+
+
+  ### Refining result of query
+
+
+  ### User selectors (aka modes)
+
+  # place where could be one of selected values
+  # values available - is the array, may be nested
+
+  ### Focusing
+
+  # Quantitifying TBD
+
+
+
+
+
+
+
