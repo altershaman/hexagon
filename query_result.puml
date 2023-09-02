@@ -1,0 +1,70 @@
+
+@startuml
+
+left to right direction
+
+!$url = "{{{url}}}"
+
+state "TOP TAGS (level 0)" as top {
+
+{{#tops}}
+    state "{{body.title}}" as {{id}}
+        !$url_fin = $url + "{{id}}"
+        {{id}} : [[$url_fin <&plus>]]   <&tag>: {{tag_count}}   <&puzzle-piece>: {{leafs_count}}
+{{/tops}}
+--
+{{#leafs}}
+    state "<&puzzle-piece>\n{{title}}" as {{id}}
+    {{id}} : {{leafs_count}}
+{{/leafs}}
+
+
+}
+top : <&tag> tags: {{tops_count}}
+top: <&puzzle-piece> out of mappings: {{leafs_count}}
+
+
+
+{{#levels}}
+state "{{title}}" as {{id}} {
+    {{#members}}
+    state "{{body.title}}" as {{id}}
+    !$url_fin = "{{{url}}}" + "{{id}}"
+    {{id}} : [[$url_fin <&plus>]]   <&tag>: 5   <&puzzle-piece>: 0
+
+    {{/members}}
+
+    {{#leafs}}
+        state "<&puzzle-piece>\n{{title}}" as {{id}}
+        {{id}} : {{leafs_count}}
+    {{/leafs}}
+
+}
+{{id}} : <&tag> subtags: {{members_count}}
+{{id}} : <&puzzle-piece> leafs: {{leafs_count}}
+{{/levels}}
+
+
+
+
+
+
+
+' state " <$sunny_one_side> Title" as State1
+' State1  : this is a string
+' State1 : this is another string
+' State1  : ----
+' State2 --> [H]
+' state "<$sunny_one_side>\ngroup " as class_exp {
+
+' }
+' state class_exp.State2
+
+' State1 -[hidden]r-> State2: map
+{{#levels}}
+{{#maps}}
+{{source}} --> {{target}}
+{{/maps}}
+{{/levels}}
+
+@enduml

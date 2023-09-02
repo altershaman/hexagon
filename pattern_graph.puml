@@ -1,0 +1,14 @@
+@startuml
+
+top to bottom direction
+
+!$url = "{{{url}}}"
+
+{{#l1Nodes}}
+state "{{body.title}}" as {{id}}
+{{/l1Nodes}}
+
+{{#l1Regs}}
+{{source}} --> {{target}} : {{label}}
+{{/l1Regs}}
+@enduml

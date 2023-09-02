@@ -1,0 +1,13 @@
+@startjson
+{
+"any node": {
+    "AND": {
+        "cube": null,
+        "OR": {
+            "green": null,
+            "red": null
+        }
+    }
+  }
+}
+@endjson

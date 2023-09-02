@@ -293,7 +293,7 @@ hexF:
                                         (
                                         $contains($stack.$eval($args[$i]), "var") ? 
                                             $stack~>|$|{$args[$i]: $nodes.id}| :
-                                                $contains($stack.$eval($args[$i]), "node") ?
+                                                $contains($stack.$eval($args[$i]), "ttl") ?
                                                     $stack~>|$|{$args[$i]: $nodes[$.id = $args[$i]].id}|; 
                                         ): $stack;
                             $i<$count($args)-1 ? $leafsCalc($args, $i+1, $stack) : $stack
@@ -307,7 +307,7 @@ hexF:
                                             $edges[$.target in $allArgs].source;
 
                                         ) :
-                                    $v.op = "OR" and $contains($stack.$eval($v.t1), "node") ?
+                                    $v.op = "OR" and $contains($stack.$eval($v.t1), "ttl") ?
                                         (   $allArgs:= $reduce($map($v.args, function($vv) {$type($vv) = "string" ? $stack.$eval($vv) : $vv}), $append);
                                             $edges[$.source = $keys($stack.$eval($v.t1)) and $.target in $allArgs].source;
 
@@ -316,7 +316,7 @@ hexF:
                                         (   $allArgs:= $reduce($map($v.args, function($vv) {$type($vv) = "string" ? $stack.$eval($vv) : $vv}), $append);
                                             $edges[$not($.target in $allArgs)].source
                                         ) :
-                                    $v.op = "OR NOT" and $contains($stack.$eval($v.t1), "node") ?
+                                    $v.op = "OR NOT" and $contains($stack.$eval($v.t1), "ttl") ?
                                         (   $allArgs:= $reduce($map($v.args, function($vv) {$type($vv) = "string" ? $stack.$eval($vv) : $vv}), $append);
                                             $edges[$.source = $keys($stack.$eval($v.t1)) and $not($.target in $allArgs)].source
                                         ) :
@@ -329,7 +329,7 @@ hexF:
                                                             });$log($allEdges, "edges");
                                             $reduce($edgeSources, $append);                                                               
                                         ) :
-                                    $v.op = "AND" and $contains($stack.$eval($v.t1), "node") ?
+                                    $v.op = "AND" and $contains($stack.$eval($v.t1), "ttl") ?
                                         (   $allArgs:= $map($v.args, function($vv) {$type($vv) = "string" ? $stack.$eval($vv) : $vv});
                                             $allEdges:= $reduce($map($distinct($reduce($allArgs, $append)), function($vv){ $edges[$.target = $vv and $.source = $v.t1]}), $append);
                                             $edgeSources:= $map($distinct($allEdges.source), function($vv) {
@@ -345,7 +345,7 @@ hexF:
                                                             });
                                             $reduce($edgeSources, $append);                                                               
                                         ) :
-                                    $v.op = "AND NOT" and $contains($stack.$eval($v.t1), "node") ?
+                                    $v.op = "AND NOT" and $contains($stack.$eval($v.t1), "ttl") ?
                                         (   $allArgs:= $map($v.args, function($vv) {$type($vv) = "string" ? $stack.$eval($vv) : $vv});
                                             $allEdges:= $reduce($map($distinct($reduce($allArgs, $append)), function($vv){ $edges[$.target = $vv and $.source = $v.t1]}), $append);
                                             $edgeSources:= $map($distinct($allEdges.source), function($vv) {

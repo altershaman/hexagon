@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_1bow5jf" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.14.0" modeler:executionPlatform="Camunda Cloud" modeler:executionPlatformVersion="8.2.0">
+  <bpmn:collaboration id="Collaboration_0w80zx5">
+    <bpmn:participant id="Participant_08pzpcz" name="Party" />
+    <bpmn:participant id="Participant_1ypt2x3" name="Party" />
+    <bpmn:messageFlow id="Flow_1vtbfhu" name="Parties have interest to each other" sourceRef="Participant_08pzpcz" targetRef="Participant_1ypt2x3" />
+    <bpmn:messageFlow id="Flow_0nda8ds" name="Parties have interest to each other" sourceRef="Participant_1ypt2x3" targetRef="Participant_08pzpcz" />
+  </bpmn:collaboration>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Collaboration_0w80zx5">
+      <bpmndi:BPMNShape id="Participant_0q4qhen_di" bpmnElement="Participant_08pzpcz" isHorizontal="true">
+        <dc:Bounds x="180" y="235" width="1100" height="60" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Participant_1q27o0m_di" bpmnElement="Participant_1ypt2x3" isHorizontal="true">
+        <dc:Bounds x="180" y="78" width="1100" height="60" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_0nda8ds_di" bpmnElement="Flow_0nda8ds">
+        <di:waypoint x="670" y="138" />
+        <di:waypoint x="670" y="235" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="587" y="169" width="76" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1vtbfhu_di" bpmnElement="Flow_1vtbfhu">
+        <di:waypoint x="780" y="235" />
+        <di:waypoint x="780" y="138" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="792" y="165" width="76" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

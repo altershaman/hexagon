@@ -1,0 +1,25 @@
+@startuml
+
+
+
+skinparam state {
+'   RoundCorner 2 doesn't work with states
+  StartColor MediumBlue
+'   EndColor Red
+'   BackgroundColor Peru
+  BackgroundColor<<Warning>> Olive
+  BorderColor Gray
+'   FontName Impact
+}
+
+
+{{#nests}}
+    state {{.}} {
+
+    }
+
+{{/nests}}
+
+
+
+@enduml

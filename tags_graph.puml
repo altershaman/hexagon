@@ -1,0 +1,20 @@
+@startuml
+
+left to right direction
+
+
+namespace tops {
+    {{#tops}}
+    class {{.}}
+    {{/tops}}
+}
+
+{{#nodes}}
+class {{.}}
+{{/nodes}}
+
+
+{{#edges}}
+{{source}} --o {{target}}
+{{/edges}}
+@enduml

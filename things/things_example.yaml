@@ -1,0 +1,87 @@
+ttl:
+
+# Properties
+  color:
+    title: цвет
+
+  red:
+    title: красный
+    hex:
+      color: map
+
+  green:
+    title: зеленый
+    hex:
+      color: map
+
+  blue:
+    title: синий
+    hex:
+      color: map
+
+  shape:
+    title: форма
+
+  sphere:
+    title: сфера
+    hex:
+      shape: map
+  
+  cube:
+    title: куб
+    hex:
+      shape: map
+
+  pyramide:
+    title: пирамида
+    hex:
+      shape: map
+
+
+# Processes
+  process:
+    title: Процесс
+    description: Действие совершаемое над входами для получения выходов
+
+  transformation:
+    title: Трансформация
+    description: Изменение формы вещей
+    hex:
+      process: map
+
+  recolor:
+    title: Перекраска
+    description: Перекраска из одного цвета в другой
+    hex:
+      process: map
+
+  hold:
+    title: Хранение
+    description: Хранение вещей
+    hex:
+      process: map
+
+  to_red:
+    title: в красный
+    hex:
+      recolor: map
+      red: имеет на выходе
+      blue: я(<).вляется входом
+      green: (<).является входом
+
+  to_green:
+    title: в зеленый
+    hex:
+      recolor: map
+      green: имеет на выходе
+      blue: (<).является входом
+      red: (<).является входом
+
+  to_blue:
+    title: в синий
+    hex:
+      recolor: map
+      blue: имеет на выходе
+      green: (<).является входом
+      red: (<).является входом
+
