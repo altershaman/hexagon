@@ -1,4 +1,407 @@
 imports:
-
+  - ../articles/articles.yaml
   - functions.yaml      
   
+
+entities:
+
+
+
+  hexV:
+
+    # menu: >
+    #   ( /*
+    #     $ttlMenu:= []; /*placeholder for ttl control menu items*/
+
+    #     $menu:= $map($eval($$.hexF.nodes)[$.body.side != null], function($v) {(
+    #                               $map($v.body.side, function($vv) {
+    #                                 { "link": "/entities/hexV/" & $vv.presentation & "?id=" & $v.id,
+    #                                   "location": "hex 1.0/Views/" & $vv.item
+    #                                 }
+    #                               })
+    #     )});
+    #     $menu:= $reduce($menu, $append);
+
+    #     $append($ttlMenu, $menu)
+    #     */
+    #   )
+
+    presentations:
+      view:
+        type: markdown
+        template: templates/view.md
+        source: >
+          (
+            /*link: ...view?id=vId&mode=mode_x.mode_y*/
+            $vId:= $params.id; $modes_selected:= $params.mode;
+            $modes_selected:= $split($modes_selected, ".");$log($modes_selected);
+
+            $view:= $lookup($$.ttl, $vId);
+            $view.hexV ?
+              (
+                $count($view.hexV) = 0 ? {"error": "Object **" & $vId & "** has empty view configuration (hexV)"} :
+                $count($view.hexV) > 0 ? (
+                  $chunks:= $distinct($view.hexV.**.modes.%.{"h": $.title, "l": $.modes.title}); $log($chunks);
+                  $modes:= $count($chunks) > 0 ? 
+                    (
+                      $chunks:= $map($chunks, function($v) {
+                        $map($v.l, function($vv) {($log("", $v &" ", $vv);
+                          {"source": $v.h ? $v.h : "viewRoot", "target": $vv, "label": "moded"}
+                        )})
+                      });$log($chunks);
+                      $chains:= $eval($$.hexF.getChains, {"edges": $reduce($chunks, $append)});
+                      $maxChain:= function($max, $v) {$count($v.path) > $max ? $count($v.path) : $max};
+                      $v_dim:= $reduce($chains, $maxChain, 0);$log($chains, "chains");
+                      $leveling:= function($chains, $ci, $v_dim, $matrix) {(
+                        $level:= $map($chains, function($v){( $log($v);
+                          $v.path[$ci] ? {"b": $v.path[$ci-2], "l":$v.path[$ci]} : null
+                        )});
+                        $matrix:= $append($matrix, {"lev_" & $ci/2:$distinct($level)[$ != null]});
+                        $ci< $v_dim-1 ? $leveling($chains, $ci+2, $v_dim, $matrix) : $matrix;
+                      )};
+                      $modes:= $leveling($chains, 2, $v_dim, []);$log($modes, "modes aval");
+                      $modes:= $map($modes, function($v, $i) {(
+                        
+                        $row:= $map($v.*, function($vv) {
+                          $vv.b = "viewRoot" or $vv.b = $modes_selected[$i-1] ? 
+                            {"b": $vv.b, "title": $vv.l, "selected": $vv.l = $modes_selected[$i] ? true : false}
+                        });
+                        $row ? (true in $row.selected ? $row : $row~>|$[0]|{"selected": true}|)
+                      )});
+                      {"modes": $modes}
+
+
+                    );
+                  
+                ) 
+              ) :
+              {"error": "Object **" & $vId & "** has no view configuration (hexV)"}
+          )
+      view_1:
+        type: markdown
+        template: view_1.md
+
+        source: >
+          (
+            $viewConfig:= $params.id;
+            $va_id:= $substringBefore($viewConfig, ".");
+            $modes_inUse:= $substringBefore($substringAfter($viewConfig, "."), ".");
+            $modes_select:= $substringAfter($substringAfter($viewConfig, "."), ".");
+            $body:= $eval($$.hexF.nodes)[$.id = $va_id].body;
+
+            $va_exists:= $body ? true : false;
+            $modes_avail:= $keys($spread($body.hex)[$.* = "modes"])[$exists($lookup($$.hexModes, $))];
+            $modes_inUse_exist:= $modes_inUse in $modes_avail ? true : false;
+            $modes_avail:= $modes_inUse_exist ? 
+                  $map($modes_avail, function($v) {$v != $modes_inUse ? {"id": $v, "title": $$.hexModes.$eval($v).title} : {"id": $v, "title": $$.hexModes.$eval($v).title, "active": true}})
+                   : 
+                  $map($modes_avail, function($v) {{"id": $v, "title": $$.hexModes.$eval($v).title}});
+            $modes_avail:= $modes_avail~>|$[-1]|{"last": true}|;
+
+            $va_exists ? 
+              ( 
+                $modes_inUse_exist ?
+                  (
+                    /*$modes_tree:= $eval($$.hexF.getModes,  {"id": $modes_inUse, "active": $modes_select});*/
+
+                    $modes_tree:= [
+                        {"prefix": "byColor", "branch": [{"id": "dh", "title": "DH", "active": true}, {"id": "df", "title": "DF", "last": true}]},
+                        {"prefix": "byColor.first", "branch": [{"id": "gh", "title": "GH" }, {"id": "gf", "title": "GF", "last": true, "active": true}]}
+                        ];
+
+
+                    {"va": $va_id, "body": $body, "modes_avail_show": $count($modes_avail), "modes_avail": $modes_avail, "modes_tree": $modes_tree, "patternParams": "id=" & $va_id & "." & $modes_inUse & "." & modes_select}
+                  )
+                : {"va": $va_id, "body": $body, "modes_avail_show": $count($modes_avail), "modes_avail": $modes_avail, "patternParams": "id=" & $va_id}
+              )
+
+            : {"va": $va_id, "error": true};
+
+
+          )
+
+      pattern:
+        type: markdown
+
+      l1:
+        type: PlantUml
+        template: pattern_graph.puml
+        source: >
+          (
+            $viewConfig:= $params.id;
+            $va_id:= $substringBefore($viewConfig, ".");
+            $modes:= $substringBefore($substringAfter($viewConfig, "."), ".");
+            $modes_select:= $substringAfter($substringAfter($viewConfig, "."), ".");
+            
+            $eval($$.hexF.l1, {"ctx": $va_id})
+          )
+
+      l2:
+        type: PlantUml
+
+  articles:
+    title: Articles
+    menu: |
+      (
+        $append([
+            {
+              "title": 'Articles',
+              "location": 'Hexagon/Материалы',
+              "expand": true,
+              "icon": ''
+            }
+          ],
+          articles.$spread().(
+              *.location ? {
+                  "location": "Hexagon/Материалы/" & *.location,
+                  "link": "entities/articles/blank?id=" & $keys()[0]
+              }
+          )
+        )
+      )
+    schema:
+      type: object
+      patternProperties:
+        ^[0-9a-zA-Z][a-zA-Z0-9_-]*(\.[a-zA-Z][a-zA-Z0-9_-]*)*$:
+          oneOf:
+            - type: object
+              properties:
+                title:
+                  title: Название документа
+                  type: string
+                location:
+                  title: Место расположения в меню
+                  type: string
+                icon:
+                  title: Иконка в меню
+                  type: string
+                type:
+                  title: Тип документа
+                  type: string
+                subjects:
+                  title: Принадлежит объектам
+                  type: array
+                  items:
+                    type: string
+                source:
+                  title: Источник данный (запрос или dataset)
+                  type: string
+                  oneOf:
+                    - type: string
+                      title: Идентификатор dataset
+                      pattern: ^[0-9a-zA-Z][a-zA-Z0-9 ]*(\.[a-zA-Z][a-zA-Z0-9\_]*)*$
+                    - type: string
+                      title: JSONata запрос
+                      pattern: \s*\((.|\s)*\)\s*
+              required:
+                - source
+            - type: object
+              properties:
+                title:
+                  title: Название документа
+                  type: string
+                location:
+                  title: Место расположения в меню
+                  type: string
+                icon:
+                  title: Иконка в меню
+                  type: string
+                type:
+                  title: Тип документа
+                  type: string
+                subjects:
+                  title: Принадлежит объектам
+                  type: array
+                  items:
+                    type: string
+                template:
+                  title: Путь к файлу шаблона
+                  type: string
+                source:
+                  title: Данные для шаблона
+                  type: string
+                  oneOf:
+                    - type: string
+                      title: Идентификатор dataset
+                      pattern: ^[0-9a-zA-Z][a-zA-Z0-9 ]*(\.[a-zA-Z][a-zA-Z0-9\_]*)*$
+                    - type: string
+                      title: JSONata запрос
+                      pattern: \s*\((.|\s)*\)\s*
+              required:
+                - template
+                - source
+      additionalProperties: false
+    presentations:
+      blank:
+        title: Представление документа
+        params:
+          title: Требуемые параметры для презентации
+          type: object
+          properties:
+            id:
+              title: Идентификатор документа
+              type: string
+              pattern: ^[0-9a-zA-Z][a-zA-Z0-9_-]*(\.[a-zA-Z][a-zA-Z0-9_-]*)*$
+          required:
+            - id
+        $constructor: |
+          (
+            /* Получаем объект документа */ 
+            $doc := $lookup($$.articles, $params."id");
+            /* Для рендера берем за основу объект документа */
+            $merge([$doc, (
+              {
+                "$base": "/articles/" & $params."id"
+              }
+            )])
+          )
+
+  observable:
+    menu: >
+      (
+        $treePaths:= function($nested, $items, $i, $path) {(
+          $path:= $nested[$i] ? $path & "/" & $nested[$i].title; $log($path, $i);
+          $items:= $count($nested[$i].includes) > 0 ?
+            $append($items, $treePaths($nested[$i].includes, [], 0, $path)): 
+            $append( $items, {"location": $path, "link":$nested[$i].link});
+          $i<$count($nested)-1 ? $treePaths($nested, $items, $i+1, $substringBefore($path, "/" & $nested[$i].title)) : $items
+        )}; 
+        $log($$.hexNav);
+        $menu:= $treePaths($$.hexNav, [{"location": "Hexagon", "link": "/entities/articles/blank?id=hex_main"}], 0, "Hexagon");
+      )
+
+
+    presentations:
+
+
+      tags:
+        type: markdown
+        template: templates/tags.md
+        source: >
+          (
+
+          )
+
+      tags_graph:
+        type: PlantUml
+        template: templates/tags_graph.puml
+        source: >
+          (
+            $edges:= $eval($$.hex.edgesMaps, {"edges": $eval($$.hex.getEdges)});
+            $edges:= $edges[$.source in $edges.target];
+            $tops:= $edges[$not($.target in $edges.source)].target;
+            $nodes:= $distinct($append($edges.source, $edges.target))[$not($ in $tops)];
+            {"tops": $tops, "nodes": $nodes, "edges": $edges}
+
+          
+          )
+
+      traversing:
+        type: markdown
+        template: templates/traversing.md
+        source: >
+          (
+            $exp:= $params.expansion;
+
+            {"exp": $exp}
+          )
+
+      traverse_graph:
+        type: PlantUml
+        template: templates/traverse_graph.puml
+        source: >
+          (
+
+            /*          
+            $expansion:= $params.expansion;
+
+            $nodes:=  $eval($$.hexF.nodes);
+            $edges:= $eval($$.hexF.edges);
+            $maps:= $edges[$.label = "map"];
+
+            /* Tops are nodes which have mappings from others to them, but have no mappings to others */
+            $tops:= $distinct($maps[$not($.target in $maps.source)].target);
+            $tops:= $nodes[$.id in $tops];
+
+            $tops:= $map($tops, function($v) {
+              $v~>|$.body|{"title": $eval($$.hexF.title_break, {"str": $.title})}|
+            });
+
+            $tops_count:= $count($tops) = 0 ? "0" : $count($tops);
+
+            /* Leafs here are nodes which have nor to or from mappings */
+            $leafs:= $nodes.id[$not($ in $maps.target) and $not($ in $maps.source)];
+            $leafs_count:= $count($leafs) = 0 ? "0" : $count($leafs);
+                
+            $levels:= $expansion != "" ?
+              (    
+                $exp_path:= $split($expansion, ".");$log($exp_path);
+                $exp_path_deep:= $exp_path != "" ? $count($exp_path): 0;$log($exp_path_deep);
+
+                $exp_path_deep > 0 ? 
+                    $map($exp_path, function($v, $i) {(
+                      $log($exp_path_deep, "check");
+                      $url_tail_calc:= function($arr, $ii, $url) {(
+                        $url:= $url & $arr[$ii] & ".";
+                        $ii < $i ? $url_tail_calc($arr, $ii+1, $url) : $url
+                      )}; 
+                      $url_tail:= $url_tail_calc($exp_path, 0, "");
+                      $maps:= $edges[$.target = $v and $.label="map"];
+                      $members:= $maps.source;
+                      $leafs:= $members[$not($ in $edges[$.label = "map"].target)];
+                      $members:= $members[$not($ in $leafs)];
+
+                      $leafs:= $nodes[$.id in $leafs];
+                      $members:= $nodes[$.id in $members];
+
+                      $members:= $map($members, function($v) {
+                        $v~>|$.body|{"title": $eval($$.hexF.title_break, {"str": $.title})}|
+                      });
+
+                      $leafs_count:= $count($leafs)=0 ? "0" : $count($leafs);
+                      $members_count:= $count($members)=0 ? "0" : $count($members);
+
+                      {"id": "l" & $string($i+1),
+                       "title": "level " & $string($i+1),
+                       "members": $members, 
+                       "members_count": $members_count, 
+                       "leafs": {"id": "leafs" & $i, "title": "Leafs"},
+                       "leafs_count": $leafs_count, 
+                       "maps": $maps[$.source in $members.id], 
+                       "url": $$.hexEnv.url & "entities/lake/whole_landscape?expansion=" & $url_tail}
+                    )});
+              );
+
+
+
+            {"tops": $tops,
+             "tops_count": $tops_count,
+             "leafs": {"id": "leafs", "title": "Leafs"},
+             "leafs_count": $leafs_count,
+             "levels": $levels,
+             "url": $$.hexEnv.url & "entities/lake/whole_landscape?expansion="
+            }
+            */
+          )
+
+      seq:
+        type: PlantUml
+        template: templates/seq.puml
+        source: >
+          (
+            {"t": t}          
+          )
+
+hexNav:
+  - title: Траверсинг
+    link: "/entities/observable/traversing"
+  - title: Sequence
+    link: "entities/observable/seq"
+  - title: Dashboards
+    link: 
+    params:
+    includes:
+      - title: Traverse tags
+        link: "/entities/observable/whole_landscape"
+      - title: Menu
+

@@ -28,16 +28,133 @@ hexF:
                );
     )
   
+  edges: >
+    (
+      $nativeTTL:= $$.ttl;
+      $inTTLHexes:= $map($spread($nativeTTL), function($v) {
+                        $v.*.hex ? $map($spread($v.*.hex), function($vv) {(
+                                      $hasParams:= "hexParams" in $keys($vv.*) ? $vv.*.hexParams : null;
+                                      $vv ? $map($spread($vv.*), function($vvv) {(
+                                        $not("hexParams" in $keys($vvv)) ?
+                                          ( $dir:= $match($keys($vv), /<=/).match ? "<=" : "=>"; 
+                                            $vvv ? {"source": $dir = "=>" ? $keys($v): $keys($vvv),
+                                                    "target": $dir = "=>" ? $keys($vvv): $keys($v),
+                                                    "label": $replace($keys($vv), /<=|=>/, ""),
+                                                    "hexParams": $hasParams ? $hasParams
+                                                   }
+                                          )
+                                      )})
+                                   )})
+                    }); 
+      $inTTLHexes:= $distinct($reduce($reduce($inTTLHexes, $append), $append));
+    )
+
+  queries: >
+    (
+      $nativeTTL:= $$.ttl;
+      $nodes:= $each($nativeTTL, function($v, $k) {
+                      {"id": $k, "body": $v~>|$|{}, ["hex"]|}
+                    }
+               );
+
+    )
+
+  queryExe: >
+    (
+      $qId:= $.qId; $qObj:= $lookup($$.ttl, $qId); $log("f", "NEW QUERY");
+      $nodes:= $eval($$.hexF.nodes);
+      $qNode:= $qObj.hexQ ? {"qId": qId, 
+                             "body": $qObj~>|$|{}, ["hex", "hexQ", "hexP", "hexR"]|,
+                             "query": $qObj.hexQ
+                             };
+
+      $qRes:=$type($qNode.query) = "object" ?
+        (
+          $headId:= $keys($qNode.query);$log($headId, "head");
+          $heads:= $headId = "ttl" ? $nodes.id : 
+                   $match($headId, /\.hexQ/).match ? $eval($$.hexF.queryExe, {"qId": $replace($headId, /\.hexQ/, "")}) :
+                   $headId in $nodes.id ? $headId : "one or more query arguments don'exist";
+
+          $heads = "one or more query arguments don'exist" ? {"error": "one or more query arguments don'exist"} :
+            (
+              $accum:= function($heads, $conditions, $ic) {(
+
+                $edgeCond:= $keys($conditions[$ic]);
+                $edgeRule:= $match($edgeCond, /EXACT|NONE|ONE|ANY/).match;
+                $edgeDir:= $match($edgeCond, /<=|=>/).match;
+                $heads:= $not($edgeRule and $edgeDir) ? {"error": "conditions corrupted"} :
+                ( 
+                  $edgeLabel:= $replace($edgeCond, $edgeRule, ""); $edgeLabel:= $replace($edgeLabel, $edgeDir, "");
+                  $tails:= $map($spread($conditions[$ic].*), function($vv){
+                    $match($keys($vv), /\.hexQ/).match ? $eval($$.hexF.queryExe, {"qId": $replace($headId, /\.hexQ/, "")}): $keys($vv)
+                  });
+                  $tails:= $reduce($tails, $append);
+                  $heads:= $edgeRule = "EXACT" ? $eval($$.hexF.getExact, {"heads": $heads, "dir": $edgeDir, "label": $edgeLabel, "tails": $tails}) :
+                           $edgeRule = "ANY" ? $eval($$.hexF.getAny, {"heads": $heads, "dir": $edgeDir, "label": $edgeLabel, "tails": $tails})
+
+                );
+
+
+                $ic<$count($conditions)-1 ? $accum ($heads, $conditions, $ic+1) : $heads
+
+              
+              
+              )};
+
+              $accum($heads, $spread($qNode.query.*), 0)
+              
+            )
+
+        ) :
+
+      {"error": "query not defined"};
+    )
+
+  getExact: >
+    (
+      $heads:= $.heads; $tails:= $.tails; $dir:= $.dir; $label:= $.label; $log($tails, "heads received");
+      $edges:= $eval($$.hexF.edges);
+
+      $map($heads, function($v){(
+        $y:=$map($tails, function($vv) {($log("f", $v & "-" & $vv);
+          $dir="<=" ? 
+            $label = "" ? $edges[$.source = $vv and $.target = $v] : $edges[$.source = $v and $.target = $vv and $.label = $label]
+              :
+            $label = "" ? $edges[$.source = $v and $.target = $vv] : $edges[$.source = $v and $.target = $vv and $.label = $label]
+        )});
+        $count($y) = $count($tails) ? $v
+      )});
+    )
+
+  getAny: >
+    (
+      $heads:= $.heads; $tails:= $.tails; $dir:= $.dir; $label:= $.label; $log($tails, "heads received");
+      $edges:= $eval($$.hexF.edges);
+
+      $map($heads, function($v){(
+        $y:=$map($tails, function($vv) {($log("f", $v & "-" & $vv);
+          $dir="<=" ? 
+            $label = "" ? $edges[$.source = $vv and $.target = $v] : $edges[$.source = $v and $.target = $vv and $.label = $label]
+              :
+            $label = "" ? $edges[$.source = $v and $.target = $vv] : $edges[$.source = $v and $.target = $vv and $.label = $label]
+        )});
+        $count($y) > 0 ? $v
+      )});
+    )
+
+    
   # Scans relations declarations through whole lake by $$.ttl.hex, $$.hex (compact/unwind, pair/chain)
   # Builds array of edges {"source": ttl_id, "target": ttl_id, "label": label, "warn": [labels], "lost":[ttl.id]}
   # Returns all edges or subset
-  edges: >
+  edges_complex: >
     (
       $nativeTTL:= $$.ttl;
       $inTTLHexes:= $map($spread($nativeTTL), function($v) {
                         $v.*.hex ? {$keys($v): $v.*.hex}
                     });
-      $chains:= $append($$.hex, $inTTLHexes);
+      /*$chains:= $append($$.hex, $inTTLHexes); future releses*/
+      $chains:= $inTTLHexes;
+
       $edges:= $distinct($reduce($map($chains, function($v) {(
         $chunks:= $eval($$.hexF.chunks, {"chain": $v});
         $map($chunks, function($vv) {
@@ -58,6 +175,90 @@ hexF:
   #           "hexParams": obj
   #         }]
   chunks: >
+    (
+      $chain:= $.chain;
+
+      $tailRecognition:= function($tail) {(
+        $tailType:= $match($tail, /^ttl\.|^hexQ\.|^hexD\./).match;
+        $tailCleared:= $tailType ? $replace($tail, $tailType, "") : $tail;
+        $tailType:= $tailType ? $substringBefore($tailType, ".") : "default";
+        {"tailCleared": $tailCleared, "tailType": $tailType}
+      )};
+      
+      $tailsIter:= function($header, $tails){
+        $map($tails, function($v) {
+          $type($v.*) = "string" ?
+            (
+              $modes:= $match($v.*, /\(!\)\.|\(\<\)\./).match;
+              $label:=  "(!)." in $modes and "(<)." in $modes ?
+                      ( $str:= $replace($v.*, "(!).", ""); $str:= $replace($str, "(<).", "");) :
+                        "(!)." in $modes ?
+                            $str:= $replace($v.*, "(!).", "") :
+                        "(<)." in $modes ?
+                            $str:= $replace($v.*, "(<).", "") : 
+                            $v.*;
+              $rejection:= "(!)." in $modes ? true : false;
+              $direction:= "(<)." in $modes ? "reverse" : "forward";
+              $merge([$header, {"tail": $keys($v), "hexParams": {"rejection": $rejection, "direction": $direction, "label": $label}}])
+            ) :
+          $type($v.*) = "object" ? 
+            $merge([$header, {"tail": $tailRecognition($keys($v)).tailCleared, "tailType": $tailRecognition($keys($v)).tailType, "hexParams": $v.*."hexParams" ? $v.*."hexParams" : {"rejection": false, "direction": "forward", "label": ""}, "deep": $v}]) :
+          $type($v.*) = "array" ?
+            $merge([$header, {"tail": $tailRecognition($keys($v)).tailCleared, "tailType": $tailRecognition($keys($v)).tailType, "hexParams": {"rejection": false, "direction": "forward", "label": ""}, "deep": $v}]) :
+          $v.* = null ?
+            $merge([$header, {"tail": $tailRecognition($keys($v)).tailCleared, "tailType": $tailRecognition($keys($v)).tailType, "hexParams": {"rejection": false, "direction": "forward", "label": ""}}])
+        })
+      };
+
+      $cTransform:= function($chain) {(
+
+        $head:= $keys($chain);$log($head);
+        $type($head) = "string" and
+        $not($head = "hex" or $head = "hexParams") and 
+        $type($chain) = "object" and 
+        $chain.* != null and ($type($chain.*) = "object" or $type($chain.*) = "array") ?
+          (
+            $headType:= $match($head, /^ttl\.|^hexQ\.|^hexD\./).match;
+            $body:= $chain.*; $head_cleared:= $headType ? $replace($head, $headType, "") : $head;
+            $chain:= $chain~>|$|{$head_cleared: $body}, [$head]|;
+            $head:= $head_cleared;
+            $headType:= $headType ? $substringBefore($headType, ".") : "default";
+
+            $tails:= $type($body) = "object" ?
+                        ( $hex:= $body.$eval("hex");
+                          $struct:= $type($hex);
+                          $chunks:= $struct = "object" ? 
+                            $tailsIter({"head": $head, "headType": $headType, "headRel": "member"}, $spread($hex)) :
+                          $struct = "array" ?  
+                            $tailsIter({"head": $head, "headType": $headType, "headRel": "item"}, $hex)
+                              :
+                            $tailsIter({"head": $head, "headType": $headType, "headRel": "member"}, $spread($body~>|$|{}, ["hexParams"]|));
+                          
+                          $map($chunks, function($v) {{"chunks": $v~>|$|{}, ["deep"]|, "deep": $v.deep ? $cTransform($v.deep)}})
+                        ) :
+                     $type($body) = "array" ?
+                        ( 
+                          $chunks:= $tailsIter({"head": $head, "headType": $headType, "headRel": "item"}, $body);
+
+                          $map($chunks, function($v) {{"chunks": $v~>|$|{}, ["deep"]|, "deep": $v.deep ? $cTransform($v.deep)}})
+
+                        ); 
+            
+         ) :                                      {"error": "chain corrupted"};
+
+      )};
+      $cT:= $cTransform($chain);
+      $cT.error ? $cT : $cT.**.chunks
+    )
+
+  # Gets chain (pair or chain) of obj:obj, obj:arr, obj:string or obj:null
+  # Returns [{"head": ttl_id, 
+  #           "headType": node | default | var | query | derivative, 
+  #           "tail": ttl_id | string | null, 
+  #           "tailType": member | item | value,
+  #           "hexParams": obj
+  #         }]
+  chunks_complex: >
     (
       $chain:= $.chain;
 
@@ -134,7 +335,7 @@ hexF:
       $cT.error ? $cT : $cT.**.chunks
     )
 
-  queries: >
+  queries_old: >
     (
       $queries:= $$.hexQ;
       $each($queries, function($v, $k) {
@@ -166,7 +367,7 @@ hexF:
     {"qId": $qId, "qHeader": $query.qHeader, "logic": $pre.**.logic, "stack": $merge($distinct($reduce($pre.**.stack, $append)))}
    )
 
-  queries_old: >
+  queries_old_old: >
     (
       $queries:= $$.hexQuery;
       $nodes:= $eval($$.hexF.nodes);
