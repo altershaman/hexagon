@@ -142,6 +142,28 @@ hexF:
       )});
     )
 
+  resolveView: >
+    (
+      $patternPre:= $.patternPre;
+      $edges:= $eval($$.hexF.edges);
+
+      $nodes:= $map($patternPre, function($v) {(
+          $match($v, /\.hexQ/).match ? 
+            ( $k:= $replace($v, /\.hexQ/, "");
+              {"pattern":$k, "landscape": $eval($$.hexF.queryExe, {"qId": $k})};
+            ) : {"pattern":$v, "landscape": $v}
+        )});
+      
+      $patternNodes:= $nodes.pattern;
+      $landscapeNodes:= $nodes.landscape;
+
+      $patternEdges:= $edges[$.source in $patternNodes and $.target in $patternNodes];
+      $landscapeEdges:= $edges[$.source in $landscapeNodes and $.target in $landscapeNodes];
+
+      {"pattern": {"nodes": $patternNodes, "edges": $patternEdges}, "landscape": {"nodes": $landscapeNodes, "edges": $landscapeEdges}}
+
+
+    )
     
   # Scans relations declarations through whole lake by $$.ttl.hex, $$.hex (compact/unwind, pair/chain)
   # Builds array of edges {"source": ttl_id, "target": ttl_id, "label": label, "warn": [labels], "lost":[ttl.id]}

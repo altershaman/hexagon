@@ -1,0 +1,14 @@
+@startuml
+
+top to bottom direction
+
+!$url = "{{{url}}}"
+
+{{#nodes}}
+state {{.}}
+{{/nodes}}
+
+{{#edges}}
+{{source}} --> {{target}} {{#label}}: {{.}}{{/label}}
+{{/edges}}
+@enduml
