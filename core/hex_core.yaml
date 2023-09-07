@@ -1,6 +1,7 @@
 imports:
   - ../articles/articles.yaml
-  - functions.yaml      
+  - functions.yaml  
+  - templates/bages.yaml    
   
 
 entities:
@@ -74,7 +75,7 @@ entities:
                         {"vId": $vId, "body": $view~>|$|{}, ["hexV"]|, "modes": $modes, "patternPre": $patternNodes}
                       ) : {"vId": $vId, "body": $view~>|$|{}, ["hexV"]|, "patternPre": $keys($view.hexV)};
                     $r:= $eval($$.hexF.resolveView, {"patternPre": $patternPre.patternPre});
-                    $patternPre~>|$|{"resView": {"pattern": $string($r.pattern), "landscape": $string($r.landscape)}}, ["patternPre"]|
+                    $patternPre~>|$|{"resView": {"pattern": $encodeUrl($string($r.pattern)), "landscape": $encodeUrl($string($r.landscape))}}, ["patternPre"]|
 
                   ) 
               ) :
@@ -295,7 +296,20 @@ entities:
 
     presentations:
 
-
+      bages:
+        type: markdown
+        template: templates/bages.md
+          
+      bages_icons:
+        type: PlantUml
+        template: templates/bages.puml
+        source: >
+          (
+            {"bages": $map($spread($$.hexBages), function($v) {
+                        {"bId": $keys($v), "svg": $v.*}
+                      })
+            }
+          )
       tags:
         type: markdown
         template: templates/tags.md
@@ -425,5 +439,7 @@ hexNav:
     includes:
       - title: Traverse tags
         link: "/entities/observable/whole_landscape"
+      - title: Bages Icons
+        link: "entities/observable/bages"
       - title: Menu
 
