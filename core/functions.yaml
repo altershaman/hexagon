@@ -172,11 +172,7 @@ hexF:
 
   resolveView: >
     (
-            $p:= [
-                  "terminals_spec1.hexQ",
-                  "transformations.hexQ"
-                  ];
-      $patternPre:= $p;
+      $patternPre:= $.patternPre;
       $edges:= $eval($$.hexF.edges);
       $nodesL:= $eval($$.hexF.nodes);
       $nodes:= $map($patternPre, function($v) {(
