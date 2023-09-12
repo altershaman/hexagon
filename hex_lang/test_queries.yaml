@@ -1,0 +1,284 @@
+hexQuery:
+
+  test_query_a:
+    title: Комплексный тестовый запрос А
+    description: тестовые "dummy" запросы (см. test_queries.yaml)
+    hexQ:
+###### basic configs (from-to)
+
+      # aaa:      # is aaa related to
+      #   red:    # bbb ?
+
+      # ccc:      # is ccc related or not to
+      #   - ddd:  # ddd ? (this query shouldn't exist because it is always true)
+
+      # eee:      # is aaa related to
+      #   fff:    # fff AND to
+      #   ggg:    # ggg (simultaniously) ?
+
+      # hhh:      # is hhh related to
+      #   - iii:  # iii OR to
+      #   - jjj:  # jjj (or both) ?
+
+###### basic configs (from-to vars)
+
+      # aaa:         # ok
+      #   (*)red:    # 
+
+      # (*)ccc:      # ok
+      #   - (*)ddd:  # 
+
+      # eee:         # ok
+      #   fff:       # 
+      #   (*)ggg:    # 
+
+      # (*)hhh:      # ok
+      #   - iii:     # 
+      #   - (*)jjj:  # 
+      
+###### basic configs (reverse)
+
+      # (<)aaa:      # ok
+      #   red:       # 
+
+      # ccc:         # ok
+      #   - (<)ddd:  # 
+
+      # eee:         # ok
+      #   (<)fff:    # 
+      #   ggg:       # 
+
+      # eee1:        # ok
+      #   (<)fff:    # 
+      #   (<)ggg:    # 
+
+      # hhh:          # ok
+      #   - (<)iii:   # 
+      #   - jjj:      # 
+
+      # hhh1:         # ok
+      #   - (<)iii1:  # 
+      #   - (<)jjj1:  # 
+
+###### basic configs (not)
+
+      # (!)aaa:      # ok
+      #   red:       # 
+
+      # ccc:         # ok
+      #   - (!)ddd:  # 
+
+      # eee:         # ok
+      #   (!)fff:    # 
+      #   ggg:       # 
+
+      # eee1:        # ok
+      #   (!)fff:    # 
+      #   (!)ggg:    # 
+
+      # hhh:          # ok
+      #   - (!)iii:   # 
+      #   - jjj:      # 
+
+      # hhh1:         # ok
+      #   - (!)iii1:  # 
+      #   - (!)jjj1:  # 
+
+###### short chunks
+
+      # aaa:      # ok
+      #   - ccc:
+      #   - ddd:
+
+      # ccc:      # ok
+      #   ddd:
+      #   aaa:
+
+      # ddd:      # ok
+      #   - bbb:
+
+      # bbb:      # ok
+      #   eee:
+
+###### short chunks (with modifiers)
+
+      # (*)aaa:      # ok
+      #   - ccc:
+      #   - (*)ddd:
+
+      # ccc:      # ok
+      #   (<)ddd:
+      #   aaa:
+
+      # ddd:      # ok
+      #   - (!)bbb:
+
+      # bbb:      # ok
+      #   (*)eee:
+
+###### long chains
+
+      # aaa:      # ok
+      #   - ccc:
+      #       fff:
+      #         - hhh:
+      #         - iii:
+      #             jjj:
+      #             kkk:
+      #       ggg:
+      #         lll:
+      #           mmm:
+      #             - nnn:
+      #   - (*)ddd:
+      #     - ooo:
+      #     - ppp:
+
+###### long chains (with chunks)
+
+      # qqq:      # ok
+      #   ccc:
+      #     - fff:
+      #         hhh:
+      #         iii:
+      #           - jjj:
+      #           - kkk:
+      #     - ggg:
+      #         - lll:
+      #             - mmm:
+      #             - nnn:
+      #   (*)ddd:
+      #     ooo:
+      #       ppp:
+
+      # hhh:
+      #   - rrr:
+      #   - sss:
+
+      # iii:
+      #   ttt:
+
+      # lll:
+      #   - uuu:
+
+###### long chains (with chunks and modifiers)
+
+      qqq:      # ok
+        ccc:
+          - fff:
+              hhh:
+              iii:
+                - jjj:
+                - kkk:
+          - ggg:
+              - lll:
+                  - mmm:
+                  - nnn:
+        ddd:
+          ooo:
+            ppp:
+
+      hhh:
+        - rrr:
+        - sss:
+
+      iii:
+        ttt:
+
+      lll:
+        - uuu:
+
+
+hexQ:
+
+  test_query_a:
+    title: Комплексный тестовый запрос А
+    description: тестовые "dummy" запросы (см. test_queries.yaml)
+    hex:
+      qqq:      # ok
+        ccc:
+          - fff:
+              hhh:
+              iii:
+                - jjj:
+                - kkk:
+          - ggg:
+              - lll:
+                  - mmm:
+                  - nnn:
+        ddd:
+          ooo:
+            ppp:
+
+      hhh:
+        - rrr:
+        - sss:
+
+      iii:
+        ttt:
+
+      lll:
+        - uuu:
+
+
+  cubes_query:
+    title: Все кубы
+    hex:
+      aaa:
+        ttl.cube:
+        bbb_selector:
+          ttl.color:
+
+  
+  # q2 and q3 should be the same but they don't. If aaa gonna be intersected, then q2 works and q3 is empty
+  #                                              If aaa gona be joined, then q2 gets overhelm and q3 works
+  cubes_query2:
+    title: Все кубы 2
+    hex:
+      - aaa:
+          ttl.cube:
+      - aaa:
+          - ttl.green:
+          - ttl.red:
+
+  cubes_query2-1:  # This case we want to say that bbb is green or red, but get bbb that connected to red or green
+    title: Все кубы 2-1
+    hex:
+      - aaa:
+          ttl.cube:
+          bbb:
+      - bbb:
+          - ttl.green:
+          - ttl.red:
+
+  cubes_query3:
+    title: Все кубы 3
+    hex:
+      - aaa:
+          ttl.cube:
+          ttl.red:
+      - aaa:
+          ttl.cube:
+          ttl.green:
+
+  cubes_query5: # Including AND OR (NOT) explicitly is more verbouse but may appear more readable
+    title: Все кубы 5
+    hex:
+      aaa:                # на самом деле тоже не очень понятная запись - не ясно почему не использовать строку со
+        AND:              # скобками. Зачем я пытаюсь остаться в ямловых структурах - -не понятно.
+          ttl.cube:
+          OR:
+            ttl.red:
+            ttl.green:
+
+
+
+  cubes_query4:
+    title: Красные кубы 4
+    hex:
+      aaa:
+        ttl.cube:
+        ttl.red:
+      bbb:
+        ttl.cube:
+        ttl.green:
+

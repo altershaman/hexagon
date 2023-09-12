@@ -1,0 +1,23 @@
+ttl:
+
+  house_designing:
+    title: Дизайн дома
+    hex:
+      =>map:
+        process:
+
+  order_placed:
+    title: Заявка получена
+    hex:
+      =>map:
+        event:
+      =>инициирует:
+        house_designing:
+
+  design_agreed:
+    title: Дизайн согласован
+    hex:
+      =>map:
+        event:
+      <=результат:
+        house_designing:

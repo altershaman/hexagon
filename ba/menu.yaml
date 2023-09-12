@@ -1,0 +1,14 @@
+hexNav:
+  - title: SEAF (BA)
+    link: 
+    includes:
+      - title: Экосистема
+        link: "/entities/hexV/view?id=ecosystem"
+      - title: Мотивации Участников
+        link: "/entities/hexV/view?id=motivations"
+      - title: Сеть процессов
+        link: "/entities/hexV/view?id=process_network"
+      - title: Карта продуктов
+        link: "/entities/hexV/view?id=products_map"
+      - title: Карта компетенций
+        link: "/entities/hexV/view?id=capability_map"

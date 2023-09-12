@@ -1,0 +1,319 @@
+ttl:
+
+# Ecosystem _________________________________________________________________________________________________________
+
+  # Meta _____________________________________________________________________________________
+  
+  # Parties ____________________________________________________
+  party:
+    title: Участник
+    bage: person_gear_orange
+
+  parties:
+    title: Участники
+    bage: person_gear_orange
+    hex:
+      =>заинтересованы:
+        products:
+    hexQ:
+      ttl:
+        EXACT=>map:
+          party:
+
+  # Products ___________________________________________________
+  product:
+    title: Продукт
+    bage: box_heart
+
+  products:
+    title: Продукты
+    bage: box_heart
+    hex:
+      =>владелец:
+        parties:
+      <=относится к:
+        processes:
+    hexQ:
+      ttl:
+        EXACT=>map:
+          product:
+
+  # View _______________________________________________________
+  ecosystem:
+    title: Экосистема
+    hexV:
+      parties.hexQ:
+      products.hexQ:
+
+
+# Motivations _________________________________________________________________________________________________________
+
+  # Meta _____________________________________________________________________________________
+
+  # Goals and Needs ____________________________________________________
+  goal_need:
+    title: Цель (потребность)
+    bage: rocket
+
+  goals_n_needs:
+    title: Цели (потребности)
+    bage: rocket
+    hex:
+      <=устанавливают:
+        parties:
+    hexQ:
+      ttl:
+        EXACT=>map:
+          goal_need:
+
+  # Drivers ____________________________________________________
+  driver:
+    title: Драйвер
+    bage: hurricane
+
+  drivers:
+    title: Драйверы
+    bage: hurricane
+    hex:
+      =>обуславливают:
+        goals_n_needs:
+      =>воздействуют:
+        parties:
+    hexQ:
+      ttl:
+        EXACT=>map:
+          driver:
+
+  # Values ____________________________________________________
+  evaluation:
+    title: Ценность
+    bage: chat_heart
+
+  evaluations:
+    title: Ценность
+    bage: chat_heart
+    hex:
+      =>закрывает:
+        goals_n_needs:
+      <=представляет:
+        products:
+      <=оценивает:
+        parties:
+    hexQ:
+      ttl:
+        EXACT=>map:
+          evaluation:
+
+
+  # View _______________________________________________________
+  motivations:
+    title: Мотивации Участников
+    hexV:
+      goals_n_needs.hexQ:
+      drivers.hexQ:
+      parties.hexQ:
+      evaluations.hexQ:
+      products.hexQ:
+
+
+# Process Network _________________________________________________________________________________________________________
+
+  # Meta _____________________________________________________________________________________
+
+  # Processes ____________________________________________________
+  process:
+    title: Процесс
+    bage: refresh
+
+  processes:
+    title: Процессы
+    bage: refresh
+    hex:
+      =>результат:
+        events:
+      <=инициируют:
+        events:
+      =>владелец:
+        parties:
+    hexQ:
+      ttl:
+        EXACT=>map:
+          process:
+
+  # Events ____________________________________________________
+  event:
+    title: Событие
+    bage: bulb_red
+
+  events:
+    title: События
+    bage: bulb_red
+    hexQ:
+      ttl:
+        EXACT=>map:
+          event:
+
+
+  # IO ____________________________________________________
+  io:
+    title: Вход-выход
+    bage: box_sealed
+
+  ios:
+    title: Входы-выходы
+    bage: box_sealed
+    hex:
+      =>является входом:
+        processes:
+      <=имеет на выходе:
+        processes:
+      =>представляют:
+        evaluations:
+    hexQ:
+      ttl:
+        EXACT=>map:
+          io:
+
+
+  # View _______________________________________________________
+  process_network:
+    title: Сеть процессов
+    hexV:
+      modes:
+      - title: Событийная последовательность
+        hexV:
+          events.hexQ:
+          processes.hexQ:
+      - title: Поток ценности
+        hexV:
+          ios.hexQ:
+          processes.hexQ:
+      - title: Владельцы
+        hexV:
+          processes.hexQ:
+          parties.hexQ:
+      - title: Используемые ресурсы
+        hexV:
+          processes.hexQ:
+          org_units.hexQ:
+          a_systems.hexQ:
+
+# Products _________________________________________________________________________________________________
+
+  # Meta _____________________________________________________________________________________
+
+  # View ____________________________________________________
+  products_map:
+    title: Карта продуктов
+    hexV:
+      modes:
+      - title: Сценарии
+        hexV:
+          products.hexQ:
+          processes.hexQ:
+          events.hexQ:
+      - title: Обмен ценностью
+        hexV:
+          products.hexQ:
+          processes.hexQ:
+          ios.hexQ:
+          evaluations.hexQ:
+          parties.hexQ:
+
+
+
+# Capabilities _________________________________________________________________________________________________
+
+  # Meta _____________________________________________________________________________________
+
+  # Resources ____________________________________________________
+  capability:
+    title: Компетенция
+    bage: hex_olive
+
+  capabilities:
+    title: Компетенции
+    bage: hex_olive
+    hex:
+      =>владелец:
+        parties:
+      <=относится к:
+        processes:
+    hexQ:
+      ttl:
+        EXACT=>map:
+          capability:
+  
+  # Resources ____________________________________________________
+  resource:
+    title: Ресурс
+    bage: box_sealed_grey
+
+  resources:
+    title: События
+    bage: box_sealed_grey
+    hex:
+      =>используется в:
+        processes:
+    hexQ:
+      ttl:
+        EXACT=>map:
+          resource:
+
+  # Automated Systems ____________________________________________________
+  a_system:
+    title: АС
+    bage: ui_window
+
+  a_systems:
+    title: AC
+    bage: ui_window
+    hex:
+      =>используется в:
+        processes:
+      =>относится к:
+        capabilities:
+    hexQ:
+      ttl:
+        EXACT=>map:
+          a_system:
+
+  # OrgUnits ____________________________________________________
+  org_unit:
+    title: Оргединица
+    bage: people_yellow
+
+  org_units:
+    title: Человеческие ресурсы
+    bage: people_yellow
+    hex:
+      =>используется в:
+        processes:
+      =>относится к:
+        capabilities:
+    hexQ:
+      ttl:
+        EXACT=>map:
+          org_unit:
+
+  # View _______________________________________________________
+  capability_map:
+    title: Карта компетенций
+    hexV:
+      modes:
+      - title: Ресурсы и процессы
+        hexV:
+          org_units.hexQ:
+          a_systems.hexQ:
+          processes.hexQ:
+          capabilities.hexQ:
+      - title: Владельцы
+        hexV:
+          parties.hexQ:
+          capabilities.hexQ:
+      - title: Интерфейсы (TBD)
+        hexV:
+          capabilities.hexQ:
+
+
+    

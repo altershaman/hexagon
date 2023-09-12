@@ -26,11 +26,6 @@ articles:
     type: markdown
     source: capability_main.md
 
-  view_ptotype:
-    location: View Prototype
-    type: markdown
-    source: ../view_prototype.md
-
   bpmn_hex:
     location: BPMN/Интерпретация BPMN
     description: How BPMN xml is translated to hexed metamodel

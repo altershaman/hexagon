@@ -14,4 +14,4 @@
 (19)-отношение->(5):one::two::three:
 :leaves:
 
-![](@entity/lake/traverse_graph?expansion={{exp}})
+![](@entity/observable/traverse_graph?expansion={{exp}})

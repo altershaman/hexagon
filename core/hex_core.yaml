@@ -99,69 +99,7 @@ entities:
             $str:= $params.data;
             $data:= $eval($decodeUrl($str));
           )
-
-      view_1:
-        type: markdown
-        template: view_1.md
-
-        source: >
-          (
-            $viewConfig:= $params.id;
-            $va_id:= $substringBefore($viewConfig, ".");
-            $modes_inUse:= $substringBefore($substringAfter($viewConfig, "."), ".");
-            $modes_select:= $substringAfter($substringAfter($viewConfig, "."), ".");
-            $body:= $eval($$.hexF.nodes)[$.id = $va_id].body;
-
-            $va_exists:= $body ? true : false;
-            $modes_avail:= $keys($spread($body.hex)[$.* = "modes"])[$exists($lookup($$.hexModes, $))];
-            $modes_inUse_exist:= $modes_inUse in $modes_avail ? true : false;
-            $modes_avail:= $modes_inUse_exist ? 
-                  $map($modes_avail, function($v) {$v != $modes_inUse ? {"id": $v, "title": $$.hexModes.$eval($v).title} : {"id": $v, "title": $$.hexModes.$eval($v).title, "active": true}})
-                   : 
-                  $map($modes_avail, function($v) {{"id": $v, "title": $$.hexModes.$eval($v).title}});
-            $modes_avail:= $modes_avail~>|$[-1]|{"last": true}|;
-
-            $va_exists ? 
-              ( 
-                $modes_inUse_exist ?
-                  (
-                    /*$modes_tree:= $eval($$.hexF.getModes,  {"id": $modes_inUse, "active": $modes_select});*/
-
-                    $modes_tree:= [
-                        {"prefix": "byColor", "branch": [{"id": "dh", "title": "DH", "active": true}, {"id": "df", "title": "DF", "last": true}]},
-                        {"prefix": "byColor.first", "branch": [{"id": "gh", "title": "GH" }, {"id": "gf", "title": "GF", "last": true, "active": true}]}
-                        ];
-
-
-                    {"va": $va_id, "body": $body, "modes_avail_show": $count($modes_avail), "modes_avail": $modes_avail, "modes_tree": $modes_tree, "patternParams": "id=" & $va_id & "." & $modes_inUse & "." & modes_select}
-                  )
-                : {"va": $va_id, "body": $body, "modes_avail_show": $count($modes_avail), "modes_avail": $modes_avail, "patternParams": "id=" & $va_id}
-              )
-
-            : {"va": $va_id, "error": true};
-
-
-          )
-
-      pattern:
-        type: markdown
-
-      l1:
-        type: PlantUml
-        template: pattern_graph.puml
-        source: >
-          (
-            $viewConfig:= $params.id;
-            $va_id:= $substringBefore($viewConfig, ".");
-            $modes:= $substringBefore($substringAfter($viewConfig, "."), ".");
-            $modes_select:= $substringAfter($substringAfter($viewConfig, "."), ".");
-            
-            $eval($$.hexF.l1, {"ctx": $va_id})
-          )
-
-      l2:
-        type: PlantUml
-
+          
   articles:
     title: Articles
     menu: |
@@ -348,7 +286,7 @@ entities:
         source: >
           (
 
-            /*          
+                 
             $expansion:= $params.expansion;
 
             $nodes:=  $eval($$.hexF.nodes);
@@ -404,7 +342,7 @@ entities:
                        "leafs": {"id": "leafs" & $i, "title": "Leafs"},
                        "leafs_count": $leafs_count, 
                        "maps": $maps[$.source in $members.id], 
-                       "url": $$.hexEnv.url & "entities/lake/whole_landscape?expansion=" & $url_tail}
+                       "url": $$.hexEnv.url & "entities/observable/traversing?expansion=" & $url_tail}
                     )});
               );
 
@@ -415,9 +353,9 @@ entities:
              "leafs": {"id": "leafs", "title": "Leafs"},
              "leafs_count": $leafs_count,
              "levels": $levels,
-             "url": $$.hexEnv.url & "entities/lake/whole_landscape?expansion="
+             "url": $$.hexEnv.url & "entities/observable/traversing?expansion="
             }
-            */
+            
           )
 
       seq:
@@ -429,8 +367,6 @@ entities:
           )
 
 hexNav:
-  - title: Траверсинг
-    link: "/entities/observable/traversing"
   - title: Sequence
     link: "entities/observable/seq"
   - title: Dashboards
@@ -438,7 +374,7 @@ hexNav:
     params:
     includes:
       - title: Traverse tags
-        link: "/entities/observable/whole_landscape"
+        link: "/entities/observable/traversing"
       - title: Bages Icons
         link: "entities/observable/bages"
       - title: Menu
