@@ -2,7 +2,7 @@ imports:
   - core/hex_core.yaml
   #- query_entity.yaml                 # Basic functions, presentations and docs
 
-  #- ba/dochub.yaml
+  - ba/dochub.yaml
 
   # - house_construction_example/dochub.yaml
 
