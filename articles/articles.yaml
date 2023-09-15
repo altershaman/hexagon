@@ -6,28 +6,3 @@ articles:
     type: markdown
     source: ../readme.md
 
-  ecosystem_vision:
-    location: 0. Экосистемное видение
-    description: Ecosystem vision concept
-    type: markdown
-    source: ecosystem_concept.md
-
-
-
-  ecosystem_main:
-    location: Бизнес-архитектура/Экосистема
-    description: Экосистемный взгляд
-    type: markdown
-    source: ecosystem_main.md
-
-  capability_main:
-    location: Бизнес-архитектура/Capability
-    description: Capability main article
-    type: markdown
-    source: capability_main.md
-
-  bpmn_hex:
-    location: BPMN/Интерпретация BPMN
-    description: How BPMN xml is translated to hexed metamodel
-    type: markdown
-    source: bpmn/bpmn_interprets.md
