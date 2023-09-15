@@ -179,8 +179,8 @@ hexF:
           $match($v, /\.hexQ/).match ? 
             ( $k:= $replace($v, /\.hexQ/, "");
               $ld_ids:= $eval($$.hexF.queryExe, {"qId": $k}) ;     
-              {"pattern":$k, "landscape": {"id_bage": $map($ld_ids, function($v) {{"id": $v, "bage": $nodesL[$.id = $k].body.bage}})}};
-            ) : {"pattern":$v, "landscape": {"id_bage": {"id": $v, "bage": $nodesL[$.id = $v].body.bage}}}
+              {"pattern":$k, "landscape": {"pat": $k, "id_bage": $map($ld_ids, function($v) {{"id": $v, "bage": $nodesL[$.id = $k].body.bage}})}};
+            ) : {"pattern":$v, "landscape": {"pat": $v, "id_bage": {"id": $v, "bage": $nodesL[$.id = $v].body.bage}}}
         )});
       
       $patternNodes:= $nodes.pattern;
@@ -188,7 +188,12 @@ hexF:
 
       $patternEdges:= $edges[$.source in $patternNodes and $.target in $patternNodes];
       $landscapeEdges:= $edges[$.source in $landscapeNodes.id_bage.id and $.target in $landscapeNodes.id_bage.id];
-
+      $landscapeEdges:= $map($landscapeEdges, function($v) {(
+        $sourcePat:= $landscapeNodes[$v.source in $.id_bage.id].pat;
+        $targetPat:= $landscapeNodes[$v.target in $.id_bage.id].pat;
+        $labelPat:= $patternEdges[$.source = $sourcePat and $.target = $targetPat].label;
+        $v.label ? $v~>|$|{"label": ($labelPat? $labelPat & ".") & $.label}| : $v~>|$|{"label": ($labelPat? $labelPat)}|
+      )});
       
 
       {"pattern": {"nodes": $nodesL[$.id in $patternNodes]~>|$.body|($bage:= $.bage;$bage ? {"bage": {"bId": $bage, "svg": $$.hexBages.$eval($bage)}})|,
@@ -201,7 +206,46 @@ hexF:
 
           )
           
+  resolveView_ debug: >
+    ( $patternPre:= [
+                    "mm.party.hexQ",
+                    "mm.product.hexQ"
+                ];          
           
+      $edges:= $eval($$.hexF.edges);
+      $nodesL:= $eval($$.hexF.nodes);
+      $nodes:= $map($patternPre, function($v) {(
+          $match($v, /\.hexQ/).match ? 
+            ( $k:= $replace($v, /\.hexQ/, "");
+              $ld_ids:= $eval($$.hexF.queryExe, {"qId": $k}) ;     
+              {"pattern":$k, "landscape": {"pat": $k, "id_bage": $map($ld_ids, function($v) {{"id": $v, "bage": $nodesL[$.id = $k].body.bage}})}};
+            ) : {"pattern":$v, "landscape": {"pat": $v, "id_bage": {"id": $v, "bage": $nodesL[$.id = $v].body.bage}}}
+        )});
+      
+      $patternNodes:= $nodes.pattern;
+      $landscapeNodes:= $nodes.landscape;$log($landscapeNodes, "ld nodes");
+
+      $patternEdges:= $edges[$.source in $patternNodes and $.target in $patternNodes];
+      $landscapeEdges:= $edges[$.source in $landscapeNodes.id_bage.id and $.target in $landscapeNodes.id_bage.id];
+      $landscapeEdges:= $map($landscapeEdges, function($v) {(
+        $sourcePat:= $landscapeNodes[$v.source in $.id_bage.id].pat;
+        $targetPat:= $landscapeNodes[$v.target in $.id_bage.id].pat;
+        $labelPat:= $patternEdges[$.source = $sourcePat and $.target = $targetPat].label;
+        $v.label ? $v~>|$|{"label": ($labelPat? $labelPat & ".") & $.label}| : $v~>|$|{"label": ($labelPat? $labelPat)}|
+      )});
+
+      
+
+      {"pattern": {"nodes": $nodesL[$.id in $patternNodes]~>|$.body|($bage:= $.bage;$bage ? {"bage": {"bId": $bage, "svg": $$.hexBages.$eval($bage)}})|,
+                   "edges": $patternEdges}, 
+       "landscape": {"nodes": $nodesL[$.id in $landscapeNodes.id_bage.id]~>|$|($i:=$.id; $log($distinct($landscapeNodes[$i in $.id_bage.id].id_bage.bage), "gg"); $bage:= $distinct($landscapeNodes[$i in $.id_bage.id].id_bage.bage); $bage ? {"body": $.body~>|$|{"bage": {"bId": $bage, "svg": $$.hexBages.$eval($bage)}}|   })|,
+                     "edges": $landscapeEdges}}
+
+
+
+
+    )
+        
 
     
   # Scans relations declarations through whole lake by $$.ttl.hex, $$.hex (compact/unwind, pair/chain)
