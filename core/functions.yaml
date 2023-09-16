@@ -191,8 +191,12 @@ hexF:
       $landscapeEdges:= $map($landscapeEdges, function($v) {(
         $sourcePat:= $landscapeNodes[$v.source in $.id_bage.id].pat;
         $targetPat:= $landscapeNodes[$v.target in $.id_bage.id].pat;
-        $labelPat:= $patternEdges[$.source = $sourcePat and $.target = $targetPat].label;
-        $v.label ? $v~>|$|{"label": ($labelPat? $labelPat & ".") & $.label}| : $v~>|$|{"label": ($labelPat? $labelPat)}|
+        $edgePat:= $patternEdges[$.source = $sourcePat and $.target = $targetPat];
+        $edgePat ?
+          (
+            $labelPat:= $edgePat.label;
+            $v.label ? $v~>|$|{"label": ($labelPat? $labelPat & ".") & $.label}| : $v~>|$|{"label": ($labelPat? $labelPat)}|
+          )
       )});
       
 
