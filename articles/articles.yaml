@@ -6,3 +6,9 @@ articles:
     type: markdown
     source: ../readme.md
 
+  hex_declare:
+    location: Декларирование объектов и отношений
+    description: Objects and relations declaring
+    type: markdown
+    source: hex_declare.md
+
