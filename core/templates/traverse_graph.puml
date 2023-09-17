@@ -22,6 +22,7 @@
 @startuml
 
 left to right direction
+set separator ::
 
 !$url = "{{{url}}}"
 
