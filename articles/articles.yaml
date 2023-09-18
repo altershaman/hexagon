@@ -12,3 +12,8 @@ articles:
     type: markdown
     source: hex_declare.md
 
+  hex_queries:
+    location: hex запросы
+    description: Quering hex
+    type: markdown
+    source: hex_queries.md
