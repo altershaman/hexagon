@@ -5,6 +5,12 @@ ttl:
     bage: building_filled_gear_green
     hex:
       # package: передает
+
+    hexQ:                   # атрибут, содержащий запрос
+      ttl:                # все ttl-объекты, которые
+          EXACT=>map:     # в обязательном порядке имеют исходящую связь "map"
+              terminal:   # с объектом terminal
+
   
   # package:
   #   title: Пакет
@@ -27,6 +33,10 @@ ttl:
     hex:
       => доступна в:
         terminal:
+    hexQ:
+      ttl:
+        EXACT=>map:
+          transformation:
       # package: выпускает
 
 
@@ -154,3 +164,21 @@ ttl:
     hex:
       =>map:
         terminal:
+
+
+  test_view:
+    title: Тестовый view
+    description: Паттерн данного view представляет собой два запроса и связи между ними. Ландшафт (landscape) -- это
+      результат выполнения запросов и связи между результирующими объектами, если они соответствуют связям паттерна.
+    hexV:
+      terminal.hexQ:
+      transformation.hexQ:
+
+hexNav:
+  - title: Материалы
+    link: 
+    params:
+    includes:
+      - title: Тестовый вью
+        link: "entities/hexV/view?id=test_view"
+
