@@ -2,17 +2,6 @@
 hexF:
 
 
-  # Scans for hexT translators declarations
-  # Executes them
-  # Return {"ttl": translatedTTL object (with hex removed), "hex": translated Hex array, unwinds}
-  hexT: >
-    (
-      /* TBD: Get ttl translated from other schemas */
-      {"ttl": {}, "hex": [],    /*translated user friendly*/
-       "nodes": [], "edges": [] /*translated fully unwinded*/
-      }
-    )
-
   # Scans objects declarations through whole lake by ttl
   # Excludes in-ttl relations declarations
   # Builds array of nodes {"id": ttl_id, "body": attributes except hex}
