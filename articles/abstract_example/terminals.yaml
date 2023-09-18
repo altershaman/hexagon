@@ -14,7 +14,7 @@ ttl:
   #     transformation: трансформируется
 
   transformation:
-    title: Трансформация пакета
+    title: Трансформация
     bage: shuffle_yellow
     hex:
       => доступна в:
