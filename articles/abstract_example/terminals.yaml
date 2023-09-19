@@ -31,8 +31,15 @@ ttl:
     title: Трансформация
     bage: shuffle_yellow
     hex:
-      => доступна в:
+      =>доступна в:
         terminal:
+        sea_terminal:
+        valley_terminal:
+        mountine_terminal:
+        river_terminal:
+        desert_terminal:
+        forest_terminal:
+      
     hexQ:
       ttl:
         EXACT=>map:
@@ -174,6 +181,36 @@ ttl:
       terminal.hexQ:
       transformation.hexQ:
 
+  test_view_moded:
+    title: Тестовый view (moded)
+    hexV:
+      modes:
+        - title: Морской
+          hexV:
+            sea_terminal:
+            transformation.hexQ:
+        - title: Речной
+          hexV:
+            river_terminal:
+            transformation.hexQ:
+        - title: Лесной
+          hexV:
+            forest_terminal:
+            transformation.hexQ:
+        - title: Горный
+          hexV:
+            mountine_terminal:
+            transformation.hexQ:
+        - title: Равнинный
+          hexV:
+            valley_terminal:
+            transformation.hexQ:
+        - title: Пустынный
+          hexV:
+            desert_terminal:
+            transformation.hexQ:
+
+
 hexNav:
   - title: Материалы
     link: 
@@ -181,4 +218,6 @@ hexNav:
     includes:
       - title: Тестовый вью
         link: "entities/hexV/view?id=test_view"
+      - title: Тестовый вью (moded)
+        link: "entities/hexV/view?id=test_view_moded"
 

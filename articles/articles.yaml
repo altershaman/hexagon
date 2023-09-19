@@ -17,3 +17,9 @@ articles:
     description: Quering hex
     type: markdown
     source: hex_queries.md
+
+  hex_views:
+    location: Представления (views)
+    description: hexV usage
+    type: markdown
+    source: hex_views.md
