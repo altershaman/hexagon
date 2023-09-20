@@ -1,4 +1,4 @@
-ttl:
+seaf.ba.ttl:
 
   terminal: 
     title: Терминал  
@@ -7,7 +7,7 @@ ttl:
       # package: передает
 
     hexQ:                   # атрибут, содержащий запрос
-      ttl:                # все ttl-объекты, которые
+      seaf.ba.ttl:                # все seaf.ba.ttl-объекты, которые
           EXACT=>map:     # в обязательном порядке имеют исходящую связь "map"
               terminal:   # с объектом terminal
 
@@ -22,7 +22,7 @@ ttl:
   all_terminals:              # идентификатор запроса
     title: все терминалы    # имя запроса
     hexQ:                   # атрибут, содержащий запрос
-        ttl:                # все ttl-объекты, которые
+        seaf.ba.ttl:                # все seaf.ba.ttl-объекты, которые
             EXACT=>map:     # в обязательном порядке имеют исходящую связь "map"
                 terminal:   # с объектом terminal
 
@@ -41,7 +41,7 @@ ttl:
         forest_terminal:
       
     hexQ:
-      ttl:
+      seaf.ba.ttl:
         EXACT=>map:
           transformation:
       # package: выпускает

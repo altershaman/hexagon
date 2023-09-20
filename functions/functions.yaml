@@ -2,15 +2,15 @@
 hexF:
 
 
-  # Scans objects declarations through whole lake by ttl
-  # Excludes in-ttl relations declarations
-  # Builds array of nodes {"id": ttl_id, "body": attributes except hex}
+  # Scans objects declarations through whole lake by seaf.ba.ttl
+  # Excludes in-seaf.ba.ttl relations declarations
+  # Builds array of nodes {"id": seaf.ba.ttl_id, "body": attributes except hex}
   # Returns all nodes
   nodes: >
     (
       /*Getting hexT is suspended due to solution of duplecated nodes keys are not found yet*/
       /*The same reason is for using 'unwind' notation delay*/
-      $nativeTTL:= $$.ttl;
+      $nativeTTL:= $$."seaf.ba.ttl";
       $nodes:= $each($nativeTTL, function($v, $k) {
                       {"id": $k, "body": $v~>|$|{}, ["hex"]|}
                     }
@@ -19,7 +19,7 @@ hexF:
   
   edges: >
     (
-      $nativeTTL:= $$.ttl;
+      $nativeTTL:= $$."seaf.ba.ttl";
       $inTTLHexes:= $map($spread($nativeTTL), function($v) {
                         $v.*.hex ? $map($spread($v.*.hex), function($vv) {(
                                       $hasParams:= "hexParams" in $keys($vv.*) ? $vv.*.hexParams : null;
@@ -41,7 +41,7 @@ hexF:
 
   queryExe: >
     (
-      $qId:= $.qId; $qObj:= $lookup($$.ttl, $qId); $log("f", "NEW QUERY");
+      $qId:= $.qId; $qObj:= $lookup($$."seaf.ba.ttl", $qId); $log("f", "NEW QUERY");
       $nodes:= $eval($$.hexF.nodes);
       $qNode:= $qObj.hexQ ? {"qId": qId, 
                              "body": $qObj~>|$|{}, ["hex", "hexQ", "hexP", "hexR"]|,
@@ -51,7 +51,7 @@ hexF:
       $qRes:=$type($qNode.query) = "object" ?
         (
           $headId:= $keys($qNode.query);$log($headId, "head");
-          $heads:= $headId = "ttl" ? $nodes.id : 
+          $heads:= $headId = "seaf.ba.ttl" ? $nodes.id : 
                    $match($headId, /\.hexQ/).match ? $eval($$.hexF.queryExe, {"qId": $replace($headId, /\.hexQ/, "")}) :
                    $headId in $nodes.id ? $headId : "one or more query arguments don'exist";
 

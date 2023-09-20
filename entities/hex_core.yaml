@@ -2,7 +2,7 @@
 
 entities:
 
-  ttl:
+  seaf.ba.ttl:
     schema:
       type: object
       patternProperties:
@@ -23,7 +23,7 @@ entities:
 
     # menu: >
     #   ( /*
-    #     $ttlMenu:= []; /*placeholder for ttl control menu items*/
+    #     $seaf.ba.ttlMenu:= []; /*placeholder for seaf.ba.ttl control menu items*/
 
     #     $menu:= $map($eval($$.hexF.nodes)[$.body.side != null], function($v) {(
     #                               $map($v.body.side, function($vv) {
@@ -34,7 +34,7 @@ entities:
     #     )});
     #     $menu:= $reduce($menu, $append);
 
-    #     $append($ttlMenu, $menu)
+    #     $append($seaf.ba.ttlMenu, $menu)
     #     */
     #   )
 
@@ -48,7 +48,7 @@ entities:
             $vId:= $params.id; $modes_selected:= $params.mode;
             $modes_selected:= $split($modes_selected, ".");$log($modes_selected);
 
-            $view:= $lookup($$.ttl, $vId);
+            $view:= $lookup($$."seaf.ba.ttl", $vId);
             $view.hexV ?
               (
                 $count($view.hexV) = 0 ? {"error": "Object **" & $vId & "** has empty view configuration (hexV)"} :
