@@ -1,7 +1,3 @@
-imports:
-  - ../articles/articles.yaml
-  - functions.yaml  
-  - templates/bages.yaml    
   
 
 entities:

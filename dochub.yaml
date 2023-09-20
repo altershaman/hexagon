@@ -1,5 +1,9 @@
 imports:
-  - core/hex_core.yaml
+  - entities/hex_core.yaml
+  - articles/articles.yaml
+  - functions/functions.yaml  
+  - entities/templates/bages.yaml    
+
   #- query_entity.yaml                 # Basic functions, presentations and docs
 
 
