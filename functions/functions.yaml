@@ -134,14 +134,14 @@ hexF:
               $ld_ids:= $eval($$.hexF.queryExe, {"qId": $k}) ;     
               {"pattern":$k, "landscape": {"pat": $k, "id_bage": $map($ld_ids, function($v) {{"id": $v, "bage": $nodesL[$.id = $k].body.bage}})}};
             ) : 
-          $not($match($keys($v), /hexM/).match) ?
+          $not($match($keys($v), /hexR/).match) ?
             {"pattern":$v, "landscape": {"pat": $v, "id_bage": {"id": $v, "bage": $nodesL[$.id = $v].body.bage}}}
         )});
       
       $patternNodes:= $nodes.pattern;
       $landscapeNodes:= $nodes.landscape;$log($landscapeNodes, "ld nodes");
 
-      $patternEdges:= $edges[$.source in $patternNodes and $.target in $patternNodes and $not($.label in $patternPre[$keys($) = "hexM"].hexM.exclude)];
+      $patternEdges:= $edges[$.source in $patternNodes and $.target in $patternNodes and $not($.label in $patternPre[$keys($) = "hexR"].hexR.exclude)];
       $landscapeEdges:= $edges[$.source in $landscapeNodes.id_bage.id and $.target in $landscapeNodes.id_bage.id];
       $landscapeEdges:= $map($landscapeEdges, function($v) {(
         $sourcePat:= $landscapeNodes[$v.source in $.id_bage.id].pat;
