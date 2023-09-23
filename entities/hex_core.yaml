@@ -85,6 +85,8 @@ entities:
                         $patternNodes:= $keys($merge($view.**.hexV.%[$.title in $assemblyMode].hexV)); $log($patternNodes);
                         {"vId": $vId, "body": $view~>|$|{}, ["hexV"]|, "modes": $modes, "patternPre": $patternNodes}
                       ) : {"vId": $vId, "body": $view~>|$|{}, ["hexV"]|, "patternPre": $keys($view.hexV)};
+                      
+                    $patternPre:= $patternPre~>|$|{"patternPre": $append($.patternPre, [{"hexM": $view.hexV.hexM}])}|;
                     $r:= $eval($$.hexF.resolveView, {"patternPre": $patternPre.patternPre});
                     $patternPre~>|$|{"resView": {"pattern": $encodeUrl($string($r.pattern)), "landscape": $encodeUrl($string($r.landscape))}}, ["patternPre"]|
 
