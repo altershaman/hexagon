@@ -163,15 +163,47 @@ hexF:
       $nesting:= $patternPre[$keys($) = "hexR"].hexR.nest;
       $nesting:= $count($nesting) > 0 ?
         $map($nesting, function($v) {(
-          $match($v, /=>/).match ? {"nest": "source", "rule": $substringAfter($v, "=>")} :
-          $match($v, /<=/).match ? {"nest": "target", "rule": $substringAfter($v, "<=")};
+          $rules:= $match($v, /=>/).match ? {"nest": "source", "rule": $substringAfter($v, "=>")} :
+                   $match($v, /<=/).match ? {"nest": "target", "rule": $substringAfter($v, "<=")};
+          $edgesToNest:= $landscapeEdges[$substringBefore($.label, ".") in $rules.rule];
+          $nestChains:= $eval($$.hexF.getChains, {"edges": $reduce($edgesToNest, $append)});
+          $nestChains:= $rules.nest = "source" ? $nestChains : $rules.nest = "target" ? 
+            (
+              $map($nestChains, function($v) {
+                {"path": $reverse($v.path)}
+              })
+            );
         )});
+
+      $toNest:= $map($nesting, function($v){(
+        $composePath:= function($aPath, $cPath, $i) {(
+          $cPath:= $cPath ? $cPath & ".." & $aPath[$i] : $aPath[$i];
+          $i<$count($aPath)-1 ? $composePath($aPath, $cPath, $i+2) : $cPath;
+        )};
+        {"node": $v.path[-1], "path": $composePath($v.path, "", 0), "rule": $v.path[1]}
+      )});
+
+      $nestLandscape:= function($toNest, $landscape, $i){(
+        $landscape:= $landscape~>|$.nodes[$.id = $toNest[$i].node]|{"id": $toNest[$i].path}|;
+        $i<$count($toNest)-1 ? $nestLandscape($toNest, $landscape, $i+1) : $landscape;
+      )};
+      $nestedLandscape:= $nestLandscape($toNest, $landscape, 0);
+      /*
+      $nests:= $map($nesting, function($v) {(
+        $edgesToNest:= $landscapeEdges[$substringBefore($.label, ".") in $v.rule];
+      )});
+      $nestChains:= $eval($$.hexF.getChains, {"edges": $reduce($nests, $append)});
+      */
+      $log($nesting, "NESTS");
+      $log($toNest, "paths");
+      $log($landscape, "ld");$log($nestedLandscape, "nestet res");
+
 
 
 
 
       {"pattern": $pattern, 
-       "landscape": $landscape
+       "landscape": $nestedLandscape
       }
 
 

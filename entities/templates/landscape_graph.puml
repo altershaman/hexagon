@@ -1,7 +1,7 @@
 @startuml
 
 top to bottom direction
-set separator ::
+set separator ..
 hide empty description
 
 !$url = "{{{url}}}"
@@ -21,7 +21,7 @@ b --> a
 {{#nodes}}
 {{#body.bage}}sprite ${{bId}} {{{svg}}}{{/body.bage}}
 state "{{#body.bage}}<${{bId}}> {{/body.bage}}{{body.title}}" as {{id}} {
-     {{id}}: <b>id:{{id}}</b>
+     ' {{id}}: <b>id:{{id}}</b>
 }
 
 {{/nodes}}
