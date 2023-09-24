@@ -154,16 +154,30 @@ hexF:
           )
       )});
       
+      $pattern:=   {"nodes": $nodesL[$.id in $patternNodes]~>|$.body|($bage:= $.bage;$bage ? {"bage": {"bId": $bage, "svg": $$.hexBages.$eval($bage)}})|,
+                     "edges": $patternEdges};
+      $landscape:= {"nodes": $nodesL[$.id in $landscapeNodes.id_bage.id]~>|$|($i:=$.id; $log($distinct($landscapeNodes[$i in $.id_bage.id].id_bage.bage), "gg"); $bage:= $distinct($landscapeNodes[$i in $.id_bage.id].id_bage.bage); $bage ? {"body": $.body~>|$|{"bage": {"bId": $bage, "svg": $$.hexBages.$eval($bage)}}|   })|,
+                     "edges": $landscapeEdges};
 
-      {"pattern": {"nodes": $nodesL[$.id in $patternNodes]~>|$.body|($bage:= $.bage;$bage ? {"bage": {"bId": $bage, "svg": $$.hexBages.$eval($bage)}})|,
-                   "edges": $patternEdges}, 
-       "landscape": {"nodes": $nodesL[$.id in $landscapeNodes.id_bage.id]~>|$|($i:=$.id; $log($distinct($landscapeNodes[$i in $.id_bage.id].id_bage.bage), "gg"); $bage:= $distinct($landscapeNodes[$i in $.id_bage.id].id_bage.bage); $bage ? {"body": $.body~>|$|{"bage": {"bId": $bage, "svg": $$.hexBages.$eval($bage)}}|   })|,
-                     "edges": $landscapeEdges}}
+      /*nesting*/
+      $nesting:= $patternPre[$keys($) = "hexR"].hexR.nest;
+      $nesting:= $count($nesting) > 0 ?
+        $map($nesting, function($v) {(
+          $match($v, /=>/).match ? {"nest": "source", "rule": $substringAfter($v, "=>")} :
+          $match($v, /<=/).match ? {"nest": "target", "rule": $substringAfter($v, "<=")};
+        )});
 
 
 
 
-          )
+      {"pattern": $pattern, 
+       "landscape": $landscape
+      }
+
+
+
+
+    )
           
 
   traverse: >

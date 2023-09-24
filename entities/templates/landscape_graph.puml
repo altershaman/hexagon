@@ -6,6 +6,18 @@ hide empty description
 
 !$url = "{{{url}}}"
 
+state a {
+     state b {
+
+     }
+}
+
+state c {
+
+}
+
+c --> b
+b --> a
 {{#nodes}}
 {{#body.bage}}sprite ${{bId}} {{{svg}}}{{/body.bage}}
 state "{{#body.bage}}<${{bId}}> {{/body.bage}}{{body.title}}" as {{id}} {
