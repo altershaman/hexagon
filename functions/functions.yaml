@@ -173,9 +173,10 @@ hexF:
                 {"path": $reverse($v.path)}
               })
             );
+          {"chains": $nestChains, "edges": $edgesToNest}
         )});
 
-      $toNest:= $map($nesting, function($v){(
+      $toNest:= $map($nesting.chains, function($v){(
         $composePath:= function($aPath, $cPath, $i) {(
           $cPath:= $cPath ? $cPath & ".." & $aPath[$i] : $aPath[$i];
           $i<$count($aPath)-1 ? $composePath($aPath, $cPath, $i+2) : $cPath;
@@ -184,16 +185,15 @@ hexF:
       )});
 
       $nestLandscape:= function($toNest, $landscape, $i){(
-        $landscape:= $landscape~>|$.nodes[$.id = $toNest[$i].node]|{"id": $toNest[$i].path}|;
+        $landscape:= $landscape~>|$.nodes[$.id = $toNest[$i].node]|{"path": $toNest[$i].path}|;
         $i<$count($toNest)-1 ? $nestLandscape($toNest, $landscape, $i+1) : $landscape;
       )};
       $nestedLandscape:= $nestLandscape($toNest, $landscape, 0);
-      /*
-      $nests:= $map($nesting, function($v) {(
-        $edgesToNest:= $landscapeEdges[$substringBefore($.label, ".") in $v.rule];
-      )});
-      $nestChains:= $eval($$.hexF.getChains, {"edges": $reduce($nests, $append)});
-      */
+
+      $unNestedEdges:= $map($nestedLandscape.edges, function($v){
+        $not($substringBefore($v.label, ".") in $nesting.edges.label) ? $v
+      });
+      $nestedLandscape:= $nestedLandscape~>|$|{"edges": $unNestedEdges}|;
       $log($nesting, "NESTS");
       $log($toNest, "paths");
       $log($landscape, "ld");$log($nestedLandscape, "nestet res");
