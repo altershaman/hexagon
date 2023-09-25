@@ -88,7 +88,7 @@ seaf.ba.ttl:
         title: все терминалы    # имя запроса
         hexQ:                   # атрибут, содержащий запрос
             seaf.ba.ttl:                # все seaf.ba.ttl-объекты, которые
-                EXACT=>map:     # в обязательном порядке имеют исходящую связь "map"
+                EVERY=>map:     # в обязательном порядке имеют исходящую связь "map"
                     terminal:   # к объекту terminal
 ```
 Выполнить запрос можно с помощью jsonata:
@@ -102,7 +102,7 @@ seaf.ba.ttl:
         title: Терминал
         hexQ:                   
             seaf.ba.ttl:                
-                EXACT=>map:     
+                EVERY=>map:     
                     terminal:   
 ```
 Теперь при обращении terminal является и обычным seaf.ba.ttl-объектом и запросом одновременно:

@@ -60,7 +60,7 @@ hexF:
               $accum:= function($heads, $conditions, $ic) {(
 
                 $edgeCond:= $keys($conditions[$ic]);
-                $edgeRule:= $match($edgeCond, /EXACT|NONE|ONE|ANY/).match;
+                $edgeRule:= $match($edgeCond, /EVERY|NONE|ONE|ANY/).match;
                 $edgeDir:= $match($edgeCond, /<=|=>/).match;
                 $heads:= $not($edgeRule and $edgeDir) ? {"error": "conditions corrupted"} :
                 ( 
@@ -69,7 +69,7 @@ hexF:
                     $match($keys($vv), /\.hexQ/).match ? $eval($$.hexF.queryExe, {"qId": $replace($headId, /\.hexQ/, "")}): $keys($vv)
                   });
                   $tails:= $reduce($tails, $append);
-                  $heads:= $edgeRule = "EXACT" ? $eval($$.hexF.getExact, {"heads": $heads, "dir": $edgeDir, "label": $edgeLabel, "tails": $tails}) :
+                  $heads:= $edgeRule = "EVERY" ? $eval($$.hexF.getEvery, {"heads": $heads, "dir": $edgeDir, "label": $edgeLabel, "tails": $tails}) :
                            $edgeRule = "ANY" ? $eval($$.hexF.getAny, {"heads": $heads, "dir": $edgeDir, "label": $edgeLabel, "tails": $tails})
 
                 );
@@ -90,7 +90,7 @@ hexF:
       {"error": "query not defined"};
     )
 
-  getExact: >
+  getEvery: >
     (
       $heads:= $.heads; $tails:= $.tails; $dir:= $.dir; $label:= $.label; $log($tails, "heads received");
       $edges:= $eval($$.hexF.edges);

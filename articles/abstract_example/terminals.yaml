@@ -8,7 +8,7 @@ seaf.ba.ttl:
 
     hexQ:                   # атрибут, содержащий запрос
       seaf.ba.ttl:                # все seaf.ba.ttl-объекты, которые
-          EXACT=>map:     # в обязательном порядке имеют исходящую связь "map"
+          EVERY=>map:     # в обязательном порядке имеют исходящую связь "map"
               terminal:   # с объектом terminal
 
   
@@ -23,7 +23,7 @@ seaf.ba.ttl:
     title: все терминалы    # имя запроса
     hexQ:                   # атрибут, содержащий запрос
         seaf.ba.ttl:                # все seaf.ba.ttl-объекты, которые
-            EXACT=>map:     # в обязательном порядке имеют исходящую связь "map"
+            EVERY=>map:     # в обязательном порядке имеют исходящую связь "map"
                 terminal:   # с объектом terminal
 
 
@@ -42,7 +42,7 @@ seaf.ba.ttl:
       
     hexQ:
       seaf.ba.ttl:
-        EXACT=>map:
+        EVERY=>map:
           transformation:
       # package: выпускает
 
