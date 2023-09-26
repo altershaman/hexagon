@@ -86,7 +86,7 @@ entities:
                         {"vId": $vId, "body": $view~>|$|{}, ["hexV"]|, "modes": $modes, "patternPre": $patternNodes}
                       ) : {"vId": $vId, "body": $view~>|$|{}, ["hexV"]|, "patternPre": $keys($view.hexV)};
 
-                    $patternPre:= $patternPre~>|$|{"patternPre": $append($.patternPre, [{"hexR": $view.hexV.hexR}])}|;
+                    $patternPre:= $patternPre~>|$|{"patternPre": $append($.patternPre, [{"hexR": $patternPre.modes ? $view.hexV.modes.**[$.title=$patternPre.modes.*[$.selected].title].hexV.hexR : $view.hexV.hexR}])}|;
                     $r:= $eval($$.hexF.resolveView, {"patternPre": $patternPre.patternPre});
                     $patternPre~>|$|{"resView": {"pattern": $encodeUrl($string($r.pattern)), "landscape": $encodeUrl($string($r.landscape))}}, ["patternPre"]|
 

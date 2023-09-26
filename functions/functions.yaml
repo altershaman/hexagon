@@ -38,12 +38,144 @@ hexF:
       $inTTLHexes:= $distinct($reduce($reduce($inTTLHexes, $append), $append));
     )
 
-
   queryExe: >
     (
-      $qId:= $.qId; $qObj:= $lookup($$."seaf.ba.ttl", $qId); $log("f", "NEW QUERY");
+      $qId:= $.qId; $qObj:= $lookup($$."seaf.ba.ttl", $qId); $log($qObj, "NEW QUERY");
+
       $nodes:= $eval($$.hexF.nodes);
-      $qNode:= $qObj.hexQ ? {"qId": qId, 
+      $qNode:= $qObj.hexQ ? {"qId": $qId, 
+                             "body": $qObj~>|$|{}, ["hex", "hexQ", "hexP", "hexR"]|,
+                             "query": $qObj.hexQ
+                             };
+
+      $qRes:=$type($qNode.query) = "object" ?
+        (
+          $headId:= $keys($qNode.query);$log($headId, "headId");
+          $heads:= $headId = "seaf.ba.ttl" ? $nodes.id : 
+                   $match($headId, /\.hexQ/).match ? $eval($$.hexF.queryExe, {"qId": $replace($headId, /\.hexQ/, "")}) :
+                   $headId in $nodes.id ? $headId : "one or more query arguments don'exist";
+          $log($heads, "heads to proceed");
+          $result:= $heads = "one or more query arguments don'exist" ? {"error": "one or more query arguments don'exist"} :
+            (
+              $accum:= function($heads, $conditions, $ic) {(
+
+                $edgeCond:= $keys($conditions[$ic]);
+                $edgeRule:= $match($edgeCond, /EVERY|NONE|ONE|ANY/).match;
+                $edgeDir:= $match($edgeCond, /<=|=>/).match;
+                $heads:= $not($edgeRule and $edgeDir) ? {"error": "conditions corrupted"} :
+                ( 
+                  $edgeLabel:= $replace($edgeCond, $edgeRule, ""); $edgeLabel:= $replace($edgeLabel, $edgeDir, "");
+                  $tails:= $map($spread($conditions[$ic].*), function($vv,$i){
+                    $match($keys($vv), /\.hexQ/).match ? {"t"&$i: $eval($$.hexF.queryExe, {"qId": $replace($keys($vv), /\.hexQ/, "")})}: {"t"&$i: $keys($vv)}
+                  });
+                  /*$tails:= $reduce($tails, $append);*/$log($edgeRule, "logic to exe");$log({"heads": $heads, "dir": $edgeDir, "label": $edgeLabel, "tails": $tails}, "to eval");
+                  $heads:= $edgeRule = "EVERY" ? $eval($$.hexF.getEvery, {"heads": $heads, "dir": $edgeDir, "label": $edgeLabel, "tails": $tails}) :
+                           $edgeRule = "ANY" ? $eval($$.hexF.getAny, {"heads": $heads, "dir": $edgeDir, "label": $edgeLabel, "tails": $tails});
+                );
+                $ic<$count($conditions)-1 ? $accum ($heads, $conditions, $ic+1) : $heads
+              )};
+              
+              $accum($heads, $spread($qNode.query.*), 0)
+            )
+        ) :
+
+      {"error": "query not defined"};
+    )
+
+  
+  queryExe2: >
+    (
+      $qId:= $.qId; $qObj:= $lookup($$."seaf.ba.ttl", $qId); $log($qObj, "NEW QUERY");
+      $nodes:= $eval($$.hexF.nodes);
+      $qNode:= $qObj.hexQ ? {"qId": $qId, 
+                             "body": $qObj~>|$|{}, ["hex", "hexQ", "hexP", "hexR"]|,
+                             "query": $qObj.hexQ
+                             };
+
+      $qRes:=$type($qNode.query) = "object" ?
+        (
+          $headId:= $keys($qNode.query);$log($headId, "headId");
+          $heads:= $headId = "seaf.ba.ttl" ? $nodes.id : 
+                   $match($headId, /\.hexQ/).match ? $eval($$.hexF.queryExe, {"qId": $replace($headId, /\.hexQ/, "")}) :
+                   $headId in $nodes.id ? $headId : "one or more query arguments don'exist";
+          $log($heads, "heads to proceed");
+          $result = "one or more query arguments don'exist" ? {"error": "one or more query arguments don'exist"} :
+            (
+              $accum:= function($heads, $conditions, $ic) {(
+
+                $edgeCond:= $keys($conditions[$ic]);
+                $edgeRule:= $match($edgeCond, /EVERY|NONE|ONE|ANY/).match;
+                $edgeDir:= $match($edgeCond, /<=|=>/).match;
+                $heads:= $not($edgeRule and $edgeDir) ? {"error": "conditions corrupted"} :
+                ( 
+                  $edgeLabel:= $replace($edgeCond, $edgeRule, ""); $edgeLabel:= $replace($edgeLabel, $edgeDir, "");
+                  $tails:= $map($spread($conditions[$ic].*), function($vv){
+                    $match($keys($vv), /\.hexQ/).match ? $eval($$.hexF.queryExe, {"qId": $replace($headId, /\.hexQ/, "")}): $keys($vv)
+                  });
+                  /*$tails:= $reduce($tails, $append)*/;$log($edgeRule, "logic to exe");$log({"heads": $heads, "dir": $edgeDir, "label": $edgeLabel, "tails": $tails}, "to eval");
+                  $heads:= $edgeRule = "EVERY" ? $eval($$.hexF.getEvery, {"heads": $heads, "dir": $edgeDir, "label": $edgeLabel, "tails": $tails}) :
+                           $edgeRule = "ANY" ? $eval($$.hexF.getAny, {"heads": $heads, "dir": $edgeDir, "label": $edgeLabel, "tails": $tails});
+                );
+                $ic<$count($conditions)-1 ? $accum ($heads, $conditions, $ic+1) : $heads
+              )};
+              
+              $accum($heads, $spread($qNode.query.*), 0)
+            )
+        ) :
+
+      {"error": "query not defined"};
+    )
+
+  queryExe_debug: >
+    (
+      $qId:= "mm.product"; $qObj:= $lookup($$."seaf.ba.ttl", $qId); $log($qObj, "NEW QUERY");
+      $nodes:= $eval($$.hexF.nodes);
+      $qNode:= $qObj.hexQ ? {"qId": $qId, 
+                             "body": $qObj~>|$|{}, ["hex", "hexQ", "hexP", "hexR"]|,
+                             "query": $qObj.hexQ
+                             };
+
+      $qRes:=$type($qNode.query) = "object" ?
+        (
+          $headId:= $keys($qNode.query);$log($headId, "headId");
+          $heads:= $headId = "seaf.ba.ttl" ? $nodes.id : 
+                   $match($headId, /\.hexQ/).match ? $eval($$.hexF.queryExe, {"qId": $replace($headId, /\.hexQ/, "")}) :
+                   $headId in $nodes.id ? $headId : "one or more query arguments don'exist";
+          $log($heads, "heads to proceed");
+          $result = "one or more query arguments don'exist" ? {"error": "one or more query arguments don'exist"} :
+            (
+              $accum:= function($heads, $conditions, $ic) {(
+
+                $edgeCond:= $keys($conditions[$ic]);
+                $edgeRule:= $match($edgeCond, /EVERY|NONE|ONE|ANY/).match;
+                $edgeDir:= $match($edgeCond, /<=|=>/).match;
+                $heads:= $not($edgeRule and $edgeDir) ? {"error": "conditions corrupted"} :
+                ( 
+                  $edgeLabel:= $replace($edgeCond, $edgeRule, ""); $edgeLabel:= $replace($edgeLabel, $edgeDir, "");
+                  $tails:= $map($spread($conditions[$ic].*), function($vv,$i){
+                    $match($keys($vv), /\.hexQ/).match ? {"t"&$i: $eval($$.hexF.queryExe, {"qId": $replace($headId, /\.hexQ/, "")})}: {"t"&$i: $keys($vv)}
+                  });
+                  /*$tails:= $reduce($tails, $append);*/$log($edgeRule, "logic to exe");$log({"heads": $heads, "dir": $edgeDir, "label": $edgeLabel, "tails": $tails}, "to eval");
+                  $heads:= $edgeRule = "EVERY" ? $eval($$.hexF.getEvery, {"heads": $heads, "dir": $edgeDir, "label": $edgeLabel, "tails": $tails}) :
+                           $edgeRule = "ANY" ? $eval($$.hexF.getAny, {"heads": $heads, "dir": $edgeDir, "label": $edgeLabel, "tails": $tails});
+                );
+                $ic<$count($conditions)-1 ? $accum ($heads, $conditions, $ic+1) : $heads
+              )};
+              
+              $accum($heads, $spread($qNode.query.*), 0)
+            )
+        ) :
+
+      {"error": "query not defined"};
+    )
+
+
+
+  queryExe1: >
+    (
+      $qId:= $.qId; $qObj:= $lookup($$."seaf.ba.ttl", $qId); $log($qObj, "NEW QUERY");
+      $nodes:= $eval($$.hexF.nodes);
+      $qNode:= $qObj.hexQ ? {"qId": $qId, 
                              "body": $qObj~>|$|{}, ["hex", "hexQ", "hexP", "hexR"]|,
                              "query": $qObj.hexQ
                              };
@@ -55,7 +187,7 @@ hexF:
                    $match($headId, /\.hexQ/).match ? $eval($$.hexF.queryExe, {"qId": $replace($headId, /\.hexQ/, "")}) :
                    $headId in $nodes.id ? $headId : "one or more query arguments don'exist";
 
-          $heads = "one or more query arguments don'exist" ? {"error": "one or more query arguments don'exist"} :
+          $result:= $heads = "one or more query arguments don'exist" ? {"error": "one or more query arguments don'exist"} :
             (
               $accum:= function($heads, $conditions, $ic) {(
 
@@ -92,39 +224,84 @@ hexF:
 
   getEvery: >
     (
-      $heads:= $.heads; $tails:= $.tails; $dir:= $.dir; $label:= $.label; $log($tails, "heads received");
+      $log($, "evaluation starts");
+      $heads:= $.heads; $tails:= $.tails; $dir:= $.dir; $label:= $.label?$.label:""; $log("", $count($tails));
       $edges:= $eval($$.hexF.edges);
 
       $map($heads, function($v){(
-        $y:=$map($tails, function($vv) {($log("f", $v & "-" & $vv);
+        $y:=$map($tails, function($vv) {($log("", $v & " - " & $label & " - " & $vv.* );
           $dir="<=" ? 
-            $label = "" ? $edges[$.source = $vv and $.target = $v] : $edges[$.source = $v and $.target = $vv and $.label = $label]
+            $label = "" ? $edges[$.source in $vv.* and $.target = $v] : $edges[$.source in $vv.* and $.target = $v and $.label = $label]
               :
-            $label = "" ? $edges[$.source = $v and $.target = $vv] : $edges[$.source = $v and $.target = $vv and $.label = $label]
-        )});
-        $count($y) = $count($tails) ? $v
+            $label = "" ? $edges[$.source = $v and $.target in $vv.*] : $edges[$.source = $v and $.target in $vv.* and $.label = $label]
+        )});$log($y);
+        $count($y) = $count($tails) ? ($log($y, "condition evaled"); $v)
       )});
     )
 
   getAny: >
     (
-      $heads:= $.heads; $tails:= $.tails; $dir:= $.dir; $label:= $.label; $log($tails, "heads received");
+      $log($, "ANY triggered");
+      $heads:= $.heads; $tails:= $.tails; $dir:= $.dir; $label:= $.label?$.label:"";
       $edges:= $eval($$.hexF.edges);
 
       $map($heads, function($v){(
-        $y:=$map($tails, function($vv) {($log("f", $v & "-" & $vv);
+        $y:=$map($tails, function($vv) {(
           $dir="<=" ? 
-            $label = "" ? $edges[$.source = $vv and $.target = $v] : $edges[$.source = $v and $.target = $vv and $.label = $label]
+            $label = "" ? $edges[$.source in $vv.* and $.target = $v] : $edges[$.source in $vv.* and $.target = $v and $.label = $label]
               :
-            $label = "" ? $edges[$.source = $v and $.target = $vv] : $edges[$.source = $v and $.target = $vv and $.label = $label]
+            $label = "" ? $edges[$.source = $v and $.target in $vv.*] : $edges[$.source = $v and $.target in $vv.* and $.label = $label]
         )});
-        $count($y) > 0 ? $v
+
+        $count($y) > 0 ? ($log($v, "condition evaled"); $v)
       )});
     )
+
+  getAny_debug: >
+      ($rec:={
+        "heads": [
+          "media_company.home_cinema",
+          "media_company.media_platform_saas",
+          "media_company.media_platform_self",
+          "bank.fl_auth"
+        ],
+        "dir": "<=",
+        "label": "",
+        "tails": [
+          "media_company",
+          "fl",
+          "bank",
+          "content_matter_buz"
+        ]
+      };
+          $heads:= $rec.heads; $tails:= $rec.tails; $dir:= $rec.dir; $label:= $rec.label? $rec.label:""; $log($label, "heads received");
+          $edges:= $eval($$.hexF.edges);
+
+          $map($heads, function($v){(
+            $y:=$map($tails, function($vv) {($log("f", $v & "-" & $vv);
+              $dir="<=" ? 
+                $label=""  ? $edges[$.source = $vv and $.target = $v] : $edges[$.source = $vv and $.target = $v and $.label = $label]
+                  :
+                $label=""  ? $edges[$.source = $v and $.target = $vv] : $edges[$.source = $v and $.target = $vv and $.label = $label]
+            )});
+            $log($y, "res");
+            $count($y) >0 ? $v
+          )});
+        )
+
+
+
 
 
   resolveView: >
     (
+      /*
+          "patternPre": [
+        "mm.product_targeted.hexQ",
+        {}
+      ]
+      */
+
       $patternPre:= $.patternPre;
       $edges:= $eval($$.hexF.edges);
       $nodesL:= $eval($$.hexF.nodes);
@@ -163,8 +340,8 @@ hexF:
       $nesting:= $patternPre[$keys($) = "hexR"].hexR.nest;
       $nesting:= $count($nesting) > 0 ?
         $map($nesting, function($v) {(
-          $rules:= $match($v, /=>/).match ? {"nest": "source", "rule": $substringAfter($v, "=>")} :
-                   $match($v, /<=/).match ? {"nest": "target", "rule": $substringAfter($v, "<=")};
+          $rules:= $match($keys($v), /=>/).match ? {"nest": "source", "rule": $substringAfter($keys($v), "=>")} :
+                   $match($keys($v), /<=/).match ? {"nest": "target", "rule": $substringAfter($keys($v), "<=")};
           $edgesToNest:= $landscapeEdges[$substringBefore($.label, ".") in $rules.rule];
           $nestChains:= $eval($$.hexF.getChains, {"edges": $reduce($edgesToNest, $append)});
           $nestChains:= $rules.nest = "source" ? $nestChains : $rules.nest = "target" ? 
