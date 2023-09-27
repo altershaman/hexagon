@@ -175,7 +175,37 @@ hexF:
                 {"chains": $nestChains, "edges": $edgesToNest}
             ); $log($nesting.chains, "nesting chained");
 
-          $toNest:= $map($nesting.chains, function($v){(
+            /*leveling*/
+            $maxChain:= function($max, $v) {$count($v.path) > $max ? $count($v.path) : $max};
+            $v_dim:= $reduce($nesting.chains, $maxChain, 0);$log($chains, "chains");
+            $leveling:= function($chains, $ci, $v_dim, $matrix) {(
+                $level:= $map($chains, function($v){( $log($v);
+                $ch:= $map($v.path[[0..$ci]], function($vv){$vv != "viewRoot" and $vv != "moded" ? $vv});
+                $v.path[$ci] ? {"chain": $ch, "b": $v.path[$ci-2], "l":$v.path[$ci]} : null
+                )});
+                $matrix:= $append($matrix, {"lev_" & $ci/2:$distinct($level)[$ != null]});
+                $ci< $v_dim-1 ? $leveling($chains, $ci+2, $v_dim, $matrix) : $matrix;
+            )};
+            $X:= $leveling($nesting.chains, 2, $v_dim, []);$log($X, "modes aval");
+            $X:= $map($X.*, function($v) {(
+                {"path": $v.chain}
+            )});$log($X, "nomalized chains");
+
+            $Y:= $map($X, function($v, $i, $a){($log("","TOCHECK " &$v.path[0]);
+                $concats:=$map($a, function($vv, $ii, $aa) {(
+                            $log("", $vv.path);
+                            $reduce($map($vv.path, function($vvv, $iii) {($log("", "> "&$vvv);
+                                ($i != $ii and $iii >= 2) and $v.path[0] = $vvv ? {"path": $append($vv.path[[0..$iii-1]], $v.path)};
+                            )}), $append);
+                          )});
+                $log($concats, "concats");
+
+                $count($concats) >0 ? $concats : $v
+            )});
+            $log($Y, "nomalized check");
+
+          $toNest:= $map($reduce($Y, $append), function($v){(
+          /*$toNest:= $map($nesting.chains, function($v){(*/
             $composePath:= function($aPath, $cPath, $i) {(
               $cPath:= $cPath ? $cPath & ".." & $aPath[$i] : $aPath[$i];
               $i<$count($aPath)-1 ? $composePath($aPath, $cPath, $i+2) : $cPath;
@@ -614,4 +644,7 @@ hexF:
       })
 
     )
+
+
+
 
