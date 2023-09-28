@@ -4,7 +4,7 @@ articles:
     # location: Hexagon
     description: Hexagon docs entry point
     type: markdown
-    source: ../readme.md
+    source: ../README.md
 
   hex_declare:
     location: Декларирование объектов и отношений
