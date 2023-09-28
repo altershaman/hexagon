@@ -85,7 +85,9 @@ hexF:
                   });
                   /*$tails:= $reduce($tails, $append);*/$log($edgeRule, "logic to exe");$log({"heads": $heads, "dir": $edgeDir, "label": $edgeLabel, "tails": $tails}, "to eval");
                   $heads:= $edgeRule = "EVERY" ? $eval($$.hexF.getEvery, {"heads": $heads, "dir": $edgeDir, "label": $edgeLabel, "tails": $tails}) :
-                           $edgeRule = "ANY" ? $eval($$.hexF.getAny, {"heads": $heads, "dir": $edgeDir, "label": $edgeLabel, "tails": $tails});
+                           $edgeRule = "ANY" ? $eval($$.hexF.getAny, {"heads": $heads, "dir": $edgeDir, "label": $edgeLabel, "tails": $tails}):
+                           $eedgeRule = "ONE" ? $eval($$.hexF.getOne, {"heads": $heads, "dir": $edgeDir, "label": $edgeLabel, "tails": $tails}):
+                           $edgeRule = "NONE" ? $eval($$.hexF.getNone, {"heads": $heads, "dir": $edgeDir, "label": $edgeLabel, "tails": $tails});
                 );
                 $ic<$count($conditions)-1 ? $accum ($heads, $conditions, $ic+1) : $heads
               )};
@@ -133,6 +135,38 @@ hexF:
         $count($y) > 0 ? ($log($v, "condition evaled"); $v)
       )});
     )
+
+  getOne: >
+    (
+      $log($, "evaluation starts");
+      $heads:= $.heads; $tails:= $.tails; $dir:= $.dir; $label:= $.label?$.label:""; $log("", $count($tails));
+      $edges:= $eval($$.hexF.edges);
+
+      $map($heads, function($v){(
+        $y:=$map($tails, function($vv) {($log("", $v & " - " & $label & " - " & $vv.* );
+          $dir="<=" ? 
+            $label = "" ? $edges[$.source in $vv.* and $.target = $v] : $edges[$.source in $vv.* and $.target = $v and $.label = $label]
+              :
+            $label = "" ? $edges[$.source = $v and $.target in $vv.*] : $edges[$.source = $v and $.target in $vv.* and $.label = $label]
+        )});$log($y);
+        $count($y) = 1 ? ($log($y, "condition evaled"); $v)
+      )});
+
+  getNone: >
+    (
+      $log($, "evaluation starts");
+      $heads:= $.heads; $tails:= $.tails; $dir:= $.dir; $label:= $.label?$.label:""; $log("", $count($tails));
+      $edges:= $eval($$.hexF.edges);
+
+      $map($heads, function($v){(
+        $y:=$map($tails, function($vv) {($log("", $v & " - " & $label & " - " & $vv.* );
+          $dir="<=" ? 
+            $label = "" ? $edges[$.source in $vv.* and $.target = $v] : $edges[$.source in $vv.* and $.target = $v and $.label = $label]
+              :
+            $label = "" ? $edges[$.source = $v and $.target in $vv.*] : $edges[$.source = $v and $.target in $vv.* and $.label = $label]
+        )});$log($y);
+        $count($y) = 0 ? ($log($y, "condition evaled"); $v)
+      )});
 
   resolveView: >
 
