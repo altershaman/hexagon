@@ -1,6 +1,21 @@
 # Core functions
 hexF:
 
+  # Translation app layer objects links into hex
+  dh_componentsToHex: >
+    (
+      $components:= $$.components;
+      $reduce($map($spread($components), function($v) {(
+        $maps:= [
+          {"source": $keys($v), "target": "mm.resource", "label": "map"},
+          {"source": $keys($v), "target": "mm.resource.app_service", "label": "type"}];
+        $regs:= $map($v.*.processes, function($vv) {
+          {"source": $keys($v), "target": $vv, "label": "поддерживает"}
+        });
+        $append($maps, $regs);
+      )}), $append)
+    )
+
 
   # Scans objects declarations through whole lake by seaf.ba.ttl
   # Excludes in-seaf.ba.ttl relations declarations
@@ -8,11 +23,10 @@ hexF:
   # Returns all nodes
   nodes: >
     (
-      /*Getting hexT is suspended due to solution of duplecated nodes keys are not found yet*/
-      /*The same reason is for using 'unwind' notation delay*/
-      $nativeTTL:= $$."seaf.ba.ttl";
+      $nativeTTL:= $$."seaf.ba.ttl"; 
+      $nativeTTL:= $mergedeep([$nativeTTL, $$.components]);
       $nodes:= $each($nativeTTL, function($v, $k) {
-                      {"id": $k, "body": $v~>|$|{}, ["hex"]|}
+                      {"id": $k, "body": $v~>|$|{}, ["hex", "hexQ", "hexV"]|}
                     }
                );
     )
@@ -36,6 +50,7 @@ hexF:
                                    )})
                     }); 
       $inTTLHexes:= $distinct($reduce($reduce($inTTLHexes, $append), $append));
+      $append($eval($$.hexF.dh_componentsToHex), $inTTLHexes)
     )
 
   queryExe: >
